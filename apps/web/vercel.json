@@ -1,31 +1,4 @@
 {
   "framework": "nextjs",
-  "devCommand": "pnpm dev",
-  "installCommand": "pnpm install",
-  "buildCommand": "pnpm build",
-  "previewCommand": "pnpm start",
-  "regions": ["gru1"],
-  "env": {
-    "NEXT_PUBLIC_APP_NAME": "Mari Allves — Moda Modesta"
-  },
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
-          "key": "Referrer-Policy",
-          "value": "strict-origin-when-cross-origin"
-        }
-      ]
-    }
-  ],
-  "redirects": []
+  "regions": ["gru1"]
 }
