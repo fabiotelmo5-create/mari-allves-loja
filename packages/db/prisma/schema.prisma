@@ -1,0 +1,618 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum OrderStatus {
+  AGUARDANDO_PAGAMENTO
+  PAGAMENTO_CONFIRMADO
+  EM_PREPARACAO
+  ENVIADO
+  ENTREGUE
+  CANCELADO
+  REEMBOLSADO
+}
+
+enum PaymentStatus {
+  PENDENTE
+  APROVADO
+  RECUSADO
+  EXPIRADO
+  CANCELADO
+  REEMBOLSADO
+}
+
+enum ProductStatus {
+  RASCUNHO
+  PUBLICADO
+  INATIVO
+  ARQUIVADO
+}
+
+enum AdminRole {
+  SUPERADMIN
+  ADMIN
+  ESTOQUISTA
+}
+
+enum MovementType {
+  ENTRADA
+  SAIDA
+  AJUSTE
+  DEVOLUCAO
+}
+
+enum CouponType {
+  PERCENTUAL
+  VALOR_FIXO
+}
+
+enum DataRequestType {
+  ACESSO
+  CORRECAO
+  EXCLUSAO
+  PORTABILIDADE
+}
+
+enum DataRequestStatus {
+  PENDENTE
+  EM_ANDAMENTO
+  CONCLUIDO
+  REJEITADO
+}
+
+// ---------------------------------------------------------------------------
+// Auditoria
+// ---------------------------------------------------------------------------
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  tableName String
+  recordId  String
+  action    String // CREATE | UPDATE | DELETE
+  changedBy String? // user id (admin ou cliente)
+  changedAt DateTime @default(now())
+  oldData   Json?
+  newData   Json?
+
+  @@index([tableName, recordId])
+  @@index([changedAt])
+  @@index([action])
+}
+
+// ---------------------------------------------------------------------------
+// Usuários / Perfis
+// ---------------------------------------------------------------------------
+
+model Profile {
+  id        String   @id @default(cuid())
+  userId    String   @unique // Supabase auth.users id
+  fullName  String?
+  cpf       String?  @unique
+  phone     String?
+  email     String?
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  addresses    Address[]
+  orders       Order[]
+  carts        Cart[]
+  wishlists    Wishlist[]
+  couponUsages CouponUsage[]
+  dataRequests DataRequest[]
+  lgpdConsents LgpdConsent[]
+
+  @@index([userId])
+  @@index([cpf])
+  @@index([email])
+}
+
+model AdminUser {
+  id        String    @id @default(cuid())
+  userId    String    @unique // Supabase auth.users id
+  fullName  String
+  email     String    @unique
+  role      AdminRole @default(ADMIN)
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  orders         Order[] // pedidos processados por este admin
+  stockMovements StockMovement[]
+
+  @@index([email])
+  @@index([role])
+  @@index([isActive])
+}
+
+// ---------------------------------------------------------------------------
+// Catálogo
+// ---------------------------------------------------------------------------
+
+model Category {
+  id          String     @id @default(cuid())
+  name        String
+  slug        String     @unique
+  description String?
+  parentId    String?
+  parent      Category?  @relation("CategoryChildren", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryChildren")
+  position    Int        @default(0)
+  active      Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  products Product[]
+
+  @@index([slug])
+  @@index([parentId])
+  @@index([active])
+  @@index([position])
+}
+
+model Product {
+  id                 String        @id @default(cuid())
+  sku                String        @unique
+  name               String
+  slug               String        @unique
+  description        String?
+  categoryId         String
+  category           Category      @relation(fields: [categoryId], references: [id])
+  priceCents         Int // centavos (sempre inteiro, nunca float)
+  previousPriceCents Int? // preço anterior, somente se houver promoção verdadeira
+  composition        String?
+  careInstructions   String?
+  weightG            Int? // gramas (frete)
+  widthCm            Int?
+  heightCm           Int?
+  depthCm            Int?
+  status             ProductStatus @default(RASCUNHO)
+  publishedAt        DateTime?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  variants    ProductVariant[]
+  images      ProductImage[]
+  measurement ProductMeasurement?
+  stock       Stock?              @relation(fields: [stockId], references: [id])
+  orderItems  OrderItem[]
+  wishlists   Wishlist[]
+  stockId     String?
+
+  @@index([sku])
+  @@index([slug])
+  @@index([categoryId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([priceCents])
+}
+
+model ProductVariant {
+  id         String   @id @default(cuid())
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  size       String
+  color      String
+  sku        String   @unique
+  priceCents Int? // se null, herda do produto
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  stock      Stock?
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+
+  @@index([productId])
+  @@index([sku])
+  @@index([size, color])
+  @@index([active])
+}
+
+model ProductImage {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  alt       String   @default("") // acessibilidade
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+  @@index([position])
+}
+
+model ProductMeasurement {
+  id        String   @id @default(cuid())
+  productId String   @unique
+  product   Product  @relation(fields: [productId], references: [id])
+  bustCm    Float?
+  waistCm   Float?
+  hipsCm    Float?
+  lengthCm  Float?
+  sleeveCm  Float?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ---------------------------------------------------------------------------
+// Estoque
+// ---------------------------------------------------------------------------
+
+model Stock {
+  id                String         @id @default(cuid())
+  variantId         String         @unique
+  variant           ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  quantity          Int            @default(0)
+  reservedQuantity  Int            @default(0)
+  lowStockThreshold Int            @default(5)
+  updatedAt         DateTime       @updatedAt
+
+  movements StockMovement[]
+  Product   Product[]
+
+  @@index([variantId])
+  @@index([quantity])
+}
+
+model StockMovement {
+  id          String       @id @default(cuid())
+  stockId     String
+  stock       Stock        @relation(fields: [stockId], references: [id])
+  type        MovementType
+  quantity    Int // quantidade movimentada (sempre positiva; o tipo indica direção)
+  reason      String?
+  changedBy   String? // admin user id
+  changedAt   DateTime     @default(now())
+  AdminUser   AdminUser?   @relation(fields: [adminUserId], references: [id])
+  adminUserId String?
+
+  @@index([stockId])
+  @@index([type])
+  @@index([changedAt])
+}
+
+// ---------------------------------------------------------------------------
+// Endereços
+// ---------------------------------------------------------------------------
+
+model Address {
+  id         String   @id @default(cuid())
+  profileId  String
+  profile    Profile  @relation(fields: [profileId], references: [id])
+  label      String   @default("Casa")
+  zip        String // CEP
+  street     String
+  number     String
+  complement String?
+  district   String
+  city       String
+  state      String // UF (2 letras)
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  orders Order[]
+
+  @@index([profileId])
+  @@index([zip])
+  @@index([isDefault])
+}
+
+// ---------------------------------------------------------------------------
+// Carrinho
+// ---------------------------------------------------------------------------
+
+model Cart {
+  id        String   @id @default(cuid())
+  profileId String? // null = visitante
+  sessionId String? // visitante anônimo
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items   CartItem[]
+  Profile Profile?   @relation(fields: [profileId], references: [id])
+
+  @@index([profileId])
+  @@index([sessionId])
+}
+
+model CartItem {
+  id        String         @id @default(cuid())
+  cartId    String
+  cart      Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  variantId String
+  variant   ProductVariant @relation(fields: [variantId], references: [id])
+  quantity  Int            @default(1)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@index([cartId])
+  @@index([variantId])
+}
+
+// ---------------------------------------------------------------------------
+// Pedidos
+// ---------------------------------------------------------------------------
+
+model Order {
+  id              String      @id @default(cuid())
+  code            String      @unique // ex: MA-20261023-0001
+  profileId       String?
+  profile         Profile?    @relation(fields: [profileId], references: [id])
+  guestEmail      String?
+  guestName       String?
+  guestPhone      String?
+  status          OrderStatus @default(AGUARDANDO_PAGAMENTO)
+  subtotalCents   Int
+  discountCents   Int         @default(0)
+  shippingCents   Int         @default(0)
+  totalCents      Int
+  shippingMethod  String?
+  shippingDays    Int?
+  addressSnapshot Json // congela endereço no momento da compra
+  addressId       String?
+  address         Address?    @relation(fields: [addressId], references: [id])
+  couponCode      String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  items         OrderItem[]
+  payments      Payment[]
+  statusHistory OrderStatusHistory[]
+  shipment      Shipment?
+  couponUsages  CouponUsage[]
+  AdminUser     AdminUser?           @relation(fields: [adminUserId], references: [id])
+  adminUserId   String?
+
+  @@index([profileId])
+  @@index([code])
+  @@index([status])
+  @@index([createdAt])
+  @@index([totalCents])
+}
+
+model OrderItem {
+  id             String          @id @default(cuid())
+  orderId        String
+  order          Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variantId      String?
+  variant        ProductVariant? @relation(fields: [variantId], references: [id])
+  productName    String // congelado no momento da compra
+  size           String? // congelado
+  color          String? // congelado
+  sku            String? // congelado
+  quantity       Int
+  unitPriceCents Int // preço congelado
+  totalCents     Int
+  Product        Product?        @relation(fields: [productId], references: [id])
+  productId      String?
+
+  @@index([orderId])
+  @@index([variantId])
+}
+
+model OrderStatusHistory {
+  id         String       @id @default(cuid())
+  orderId    String
+  order      Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  fromStatus OrderStatus?
+  toStatus   OrderStatus
+  note       String?
+  changedBy  String? // admin id ou 'system'
+  changedAt  DateTime     @default(now())
+
+  @@index([orderId])
+  @@index([toStatus])
+  @@index([changedAt])
+}
+
+// ---------------------------------------------------------------------------
+// Pagamentos
+// ---------------------------------------------------------------------------
+
+model Payment {
+  id             String        @id @default(cuid())
+  orderId        String
+  order          Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  provider       String // mercado_pago | pagbank | manual
+  providerTxId   String        @unique // identificador único da transação no provedor
+  idempotencyKey String        @unique // evita cobrança duplicada
+  method         String? // pix | credit_card | debit_card | boleto
+  status         PaymentStatus @default(PENDENTE)
+  amountCents    Int
+  raw            Json? // resposta bruta do provedor (sem dados do cartão)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  events PaymentEvent[]
+
+  @@index([orderId])
+  @@index([providerTxId])
+  @@index([idempotencyKey])
+  @@index([status])
+}
+
+model PaymentEvent {
+  id         String   @id @default(cuid())
+  paymentId  String
+  payment    Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  eventType  String // payment.approved | payment.rejected | ...
+  payload    Json?
+  receivedAt DateTime @default(now())
+
+  @@index([paymentId])
+  @@index([eventType])
+  @@index([receivedAt])
+}
+
+// ---------------------------------------------------------------------------
+// Cupons
+// ---------------------------------------------------------------------------
+
+model Coupon {
+  id                  String     @id @default(cuid())
+  code                String     @unique
+  type                CouponType
+  value               Int // centavos se VALOR_FIXO, percentual se PERCENTUAL
+  startsAt            DateTime
+  endsAt              DateTime
+  maxUses             Int? // null = ilimitado
+  minSubtotalCents    Int        @default(0)
+  active              Boolean    @default(true)
+  eligibleProductIds  String[] // IDs de produtos elegíveis (vazio = todos)
+  eligibleCategoryIds String[] // IDs de categorias elegíveis (vazio = todas)
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+
+  usages CouponUsage[]
+
+  @@index([code])
+  @@index([active])
+  @@index([startsAt, endsAt])
+}
+
+model CouponUsage {
+  id        String   @id @default(cuid())
+  couponId  String
+  coupon    Coupon   @relation(fields: [couponId], references: [id])
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id])
+  profileId String?
+  profile   Profile? @relation(fields: [profileId], references: [id])
+  usedAt    DateTime @default(now())
+
+  @@index([couponId])
+  @@index([orderId])
+  @@index([profileId])
+}
+
+// ---------------------------------------------------------------------------
+// Frete / Logística
+// ---------------------------------------------------------------------------
+
+model ShippingZone {
+  id                           String   @id @default(cuid())
+  name                         String
+  zipRanges                    String[] // CEPs atendidos (ex: ["47800-000","47800-999"])
+  priceCents                   Int
+  shippingDays                 Int
+  freeShippingMinSubtotalCents Int? // acima desse subtotal, frete grátis
+  active                       Boolean  @default(true)
+  pickupAllowed                Boolean  @default(false)
+  pickupAddress                Json? // endereço da retirada
+  createdAt                    DateTime @default(now())
+  updatedAt                    DateTime @updatedAt
+
+  @@index([active])
+}
+
+model Shipment {
+  id           String    @id @default(cuid())
+  orderId      String    @unique
+  order        Order     @relation(fields: [orderId], references: [id])
+  carrier      String?
+  trackingCode String?
+  shippedAt    DateTime?
+  deliveredAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  trackingEvents TrackingEvent[]
+
+  @@index([orderId])
+  @@index([trackingCode])
+}
+
+model TrackingEvent {
+  id          String   @id @default(cuid())
+  shipmentId  String
+  shipment    Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  status      String
+  description String?
+  occurredAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  @@index([shipmentId])
+  @@index([occurredAt])
+}
+
+// ---------------------------------------------------------------------------
+// Favoritos
+// ---------------------------------------------------------------------------
+
+model Wishlist {
+  id        String   @id @default(cuid())
+  profileId String
+  profile   Profile  @relation(fields: [profileId], references: [id])
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([profileId, productId])
+  @@index([profileId])
+}
+
+// ---------------------------------------------------------------------------
+// Conteúdo / Configurações
+// ---------------------------------------------------------------------------
+
+model ContentBlock {
+  id        String   @id @default(cuid())
+  key       String   @unique // home_banner_1, sobre_texto, etc.
+  type      String // banner | text | html | product_list
+  data      Json
+  updatedBy String? // admin user id
+  updatedAt DateTime @updatedAt
+
+  @@index([key])
+}
+
+model Setting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+}
+
+// ---------------------------------------------------------------------------
+// LGPD / Privacidade
+// ---------------------------------------------------------------------------
+
+model LgpdConsent {
+  id        String   @id @default(cuid())
+  profileId String?
+  profile   Profile? @relation(fields: [profileId], references: [id])
+  type      String // cookies | marketing | termos
+  granted   Boolean
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([profileId])
+  @@index([type])
+  @@index([granted])
+}
+
+model DataRequest {
+  id         String            @id @default(cuid())
+  profileId  String?
+  profile    Profile?          @relation(fields: [profileId], references: [id])
+  type       DataRequestType
+  status     DataRequestStatus @default(PENDENTE)
+  createdAt  DateTime          @default(now())
+  resolvedAt DateTime?
+
+  @@index([profileId])
+  @@index([type])
+  @@index([status])
+}
