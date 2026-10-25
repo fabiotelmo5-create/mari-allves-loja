@@ -1,5 +1,4 @@
 {
-  "outputFileTracingRoot": "../..",
   "framework": "nextjs",
   "devCommand": "pnpm dev",
   "installCommand": "pnpm install",
