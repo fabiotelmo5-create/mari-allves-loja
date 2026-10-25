@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  outputFileTracingRoot: process.env.VERCEL ? '../..' : undefined,
   images: {
     remotePatterns: [
       {
@@ -10,7 +9,6 @@ const nextConfig = {
       },
     ],
   },
-  // Desabilitar ESLint no build se não estiver configurado ainda (vai ser ativado depois)
   eslint: {
     ignoreDuringBuilds: true,
   },
