@@ -1,10 +1,9 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Minus, Plus, ShoppingBag, Heart, Mail, Phone, Truck } from 'lucide-react';
-import { Button } from '@/components/button';
 import { getProductBySlug } from '@/lib/mock-data';
 import { formatPrice } from '@/lib/utils';
+import { ProductPurchase } from '@/components/product-purchase';
 
 export default async function ProductPage({
   params,
@@ -18,13 +17,9 @@ export default async function ProductPage({
     notFound();
   }
 
-  const hasPromo = Boolean(product.previousPriceCents && product.previousPriceCents > product.priceCents);
-  const [selectedVariant, setSelectedVariant] = React.useState<
-    (typeof product.variants)[number] | null
-  >(null);
-  const [quantity, setQuantity] = React.useState(1);
-
-  const inStock = selectedVariant?.stockQuantity ?? 0 > 0;
+  const hasPromo = Boolean(
+    product.previousPriceCents && product.previousPriceCents > product.priceCents
+  );
 
   return (
     <main className="flex-1">
@@ -89,99 +84,8 @@ export default async function ProductPage({
               )}
             </div>
 
-            {/* Variações */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-foreground">Tamanho e cor</h3>
-              <div className="grid grid-cols-3 gap-3">
-                {product.variants.map((v) => {
-                  const available = v.active && v.stockQuantity > 0;
-                  const isSelected = selectedVariant?.id === v.id;
-                  return (
-                    <button
-                      key={v.id}
-                      onClick={() => setSelectedVariant(v)}
-                      className={`aspect-square border rounded-lg flex flex-col items-center justify-center gap-1 text-xs transition-colors ${
-                        !available
-                          ? 'border-dashed border-rosé-200 text-rosé-300 cursor-not-allowed'
-                          : isSelected
-                          ? 'border-rosé-700 bg-rosé-50 text-rosé-700 font-semibold'
-                          : 'border-border text-foreground hover:border-rosé-300'
-                      }`}
-                      disabled={!available}
-                    >
-                      {v.size} · {v.color}
-                      {!available && <span className="text-[10px] mt-0.5">Sem estoque</span>}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Quantidade */}
-            <div className="flex items-center gap-3">
-              <label className="text-sm text-muted-foreground">Quantidade</label>
-              <div className="flex items-center border border-input rounded-lg overflow-hidden">
-                <button
-                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                  disabled={quantity === 1 || !inStock}
-                  className="px-3 py-1.5 text-sm hover:bg-rosé-50"
-                >
-                  <Minus className="h-4 w-4" />
-                </button>
-                <span className="px-3 text-sm">{quantity}</span>
-                <button
-                  onClick={() => setQuantity((q) => q + 1)}
-                  disabled={!inStock || quantity >= (selectedVariant?.stockQuantity ?? 0)}
-                  className="px-3 py-1.5 text-sm hover:bg-rosé-50"
-                >
-                  <Plus className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-
-            {/* Estoque */}
-            <div className={`flex items-center gap-2 text-sm font-medium ${
-              inStock ? 'text-rosé-700' : 'text-red-600'
-            }`}>
-              {inStock ? (
-                <>
-                  <span>✓ Disponível</span>
-                  {selectedVariant?.stockQuantity != null && selectedVariant.stockQuantity <= 5 && (
-                    <span> — Apenas {selectedVariant.stockQuantity} unidade(s)</span>
-                  )}
-                </>
-              ) : (
-                <span>Indisponível</span>
-              )}
-            </div>
-
-            {/* Ações */}
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Button
-                disabled={!inStock || !selectedVariant}
-                className="flex-1"
-                onClick={() => {
-                  if (selectedVariant) {
-                    // Adicionar ao carrinho (mock)
-                    alert(
-                      `Adicionado ao carrinho: ${product.name} (${selectedVariant.size} / ${selectedVariant.color}) x${quantity}`
-                    );
-                  }
-                }}
-              >
-                <ShoppingBag className="h-4 w-4 mr-2" />
-                {inStock ? 'Adicionar ao carrinho' : 'Esgotado'}
-              </Button>
-              <Button variant="outline" asChild className="flex-1">
-                <Link href={`/checkout?produto=${product.slug}&variante=${selectedVariant?.id ?? ''}&qtd=${quantity}`}>
-                  Comprar agora
-                </Link>
-              </Button>
-            </div>
-
-            <button className="text-sm text-rosé-700 flex items-center gap-1 hover:underline">
-              <Heart className="h-4 w-4" /> Adicionar aos favoritos
-            </button>
+            {/* Seleção de variação, quantidade e ações */}
+            <ProductPurchase product={product} />
           </div>
 
           {/* Informações adicionais */}
@@ -259,5 +163,3 @@ export default async function ProductPage({
     </main>
   );
 }
-
-import React from 'react';
