@@ -32,6 +32,33 @@
 
 > Previsão total do **MVP (Fases 0–6 + 8 mínimo)**: ~10–16 semanas. "MVP rápido (semanas)" exige escopo enxuto e decisões rápidas.
 
+## 2.1 Status atual (atualizado em 2026-10-26)
+
+Legenda: ✅ concluído · 🟡 em andamento · ⬜ não iniciado
+
+| Fase | Status | O que já existe | O que falta |
+|---|---|---|---|
+| **0 — Descoberta e setup** | 🟡 80% | Monorepo, GitHub, Vercel, Supabase SP, banco criado | Domínio, dados da empresa, logo, produtos reais, conta de pagamento, e-mail |
+| **1 — Fundação** | 🟡 60% | Schema (28 tabelas) + migration aplicada, design system, layouts | Auth real (cliente/admin), RBAC, RLS |
+| **2 — Catálogo** | 🟡 60% | Todas as páginas, leitura do banco via Prisma, seed (6 produtos) | CRUD no admin, busca, filtros, mais vendidos |
+| **3 — Carrinho e checkout** | 🟡 40% | Carrinho em localStorage, UI de checkout | Persistir carrinho no banco, cupons, frete por CEP, criar pedido |
+| **4 — Pagamentos** | ⬜ 0% | Interface de abstração planejada | Provedor, webhooks, reconciliação |
+| **5 — Área do cliente** | ⬜ 5% | Telas de login/pedidos/favoritos (vazias) | Pedidos reais, rastreio, endereços, dados |
+| **6 — Admin completo** | ⬜ 5% | Tela de login (sem autenticação) | Dashboard, estoque, pedidos, clientes, cupons |
+| **7 — Logística** | ⬜ 0% | — | Zonas/CEPs, taxas, prazos, rastreamento |
+| **8 — Legal, LGPD, a11y** | 🟡 50% | Páginas legais escritas, a11y básica | Banner de cookies/consentimento real, revisão jurídica |
+| **9 — Fiscal** | ⬜ 0% | — | Fora do MVP |
+| **10 — Go-live** | ⬜ 0% | — | Testes E2E, carga, backups, monitoramento |
+
+### Ordem recomendada a partir daqui
+
+1. **Auth (Fase 1)** — cadastro/login real com Supabase Auth + perfis.
+2. **Admin de produtos (Fase 6, recorte)** — sem isso não há como cadastrar produtos reais sem código.
+3. **Pedidos (Fase 3)** — checkout gravando no banco, com baixa de estoque transacional.
+4. **Pagamento (Fase 4)** — depende de conta homologada.
+5. **Logística (Fase 7)** + **Legal/LGPD (Fase 8)** antes do go-live.
+
+
 ## 3. Definição de "pronto" (DoD)
 
 - Pagamento confirmado **somente** por webhook autenticado.
