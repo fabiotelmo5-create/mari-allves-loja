@@ -10,19 +10,22 @@ export const dynamic = 'force-dynamic';
  */
 export async function GET() {
   let database: 'ok' | 'error' | 'not_configured' = 'not_configured';
+  let databaseError: string | null = null;
 
   if (process.env.DATABASE_URL) {
     try {
       await prisma.$queryRaw`SELECT 1`;
       database = 'ok';
-    } catch {
+    } catch (error) {
       database = 'error';
+      databaseError = error instanceof Error ? error.message.slice(0, 400) : String(error).slice(0, 400);
     }
   }
 
   return NextResponse.json({
     ok: database !== 'error',
     database,
+    databaseError,
     databaseUrl: Boolean(process.env.DATABASE_URL),
     supabaseUrl: Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL),
     supabaseAnonKey: Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
