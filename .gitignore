@@ -34,3 +34,5 @@ prisma/migrations/*.lock
 
 # Turborepo
 .turbo/
+.vercel
+.env*
