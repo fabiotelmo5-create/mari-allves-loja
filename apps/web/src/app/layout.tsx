@@ -19,9 +19,6 @@ export const metadata: Metadata = {
   icons: {
     icon: '/favicon.svg',
   },
-  other: {
-    'x-build-check': 'marker-2026-10-26-a',
-  },
 };
 
 export default function RootLayout({
