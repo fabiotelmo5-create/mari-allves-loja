@@ -10,7 +10,6 @@ export const dynamic = 'force-dynamic';
  */
 export async function GET() {
   let database: 'ok' | 'error' | 'not_configured' = 'not_configured';
-  let databaseError: string | null = null;
 
   if (process.env.DATABASE_URL) {
     try {
@@ -18,19 +17,22 @@ export async function GET() {
       database = 'ok';
     } catch (error) {
       database = 'error';
-      databaseError = error instanceof Error ? error.message.slice(0, 400) : String(error).slice(0, 400);
+      // Log interno (visível nos logs da Vercel), nunca na resposta pública.
+      console.error('[health] falha ao consultar o banco:', error);
     }
   }
 
-  return NextResponse.json({
-    ok: database !== 'error',
-    database,
-    databaseError,
-    databaseUrl: Boolean(process.env.DATABASE_URL),
-    supabaseUrl: Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL),
-    supabaseAnonKey: Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
-    vercelEnv: process.env.VERCEL_ENV ?? null,
-    nodeEnv: process.env.NODE_ENV ?? null,
-    commit: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? null,
-  });
+  return NextResponse.json(
+    {
+      ok: database !== 'error',
+      database,
+      databaseUrl: Boolean(process.env.DATABASE_URL),
+      supabaseUrl: Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL),
+      supabaseAnonKey: Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
+      vercelEnv: process.env.VERCEL_ENV ?? null,
+      nodeEnv: process.env.NODE_ENV ?? null,
+      commit: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? null,
+    },
+    { status: database === 'error' ? 503 : 200 }
+  );
 }
