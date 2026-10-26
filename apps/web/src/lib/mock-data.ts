@@ -39,7 +39,7 @@ export interface Product {
 
 const baseImages = (slug: string, count = 3) =>
   Array.from({ length: count }, (_, i) => ({
-    url: `https://images.unsplash.com/photo-1591055223018-cdc75b26873f?w=800&q=80&fm=jpg&crop=entropy&cs=tinysrgb&ixid=M3w3NDk1Nzd8MHwxfHNlYXJjaHw${i + 1}fHxmYXNoaW9uJTIwbW9kZXN0YXxlbnwwfHx8fDE3MzAwMDAwMDB8MA&auto=format&fit=crop`,
+    url: `https://placehold.co/800x1000/png?text=${encodeURIComponent(slug)}&bg=C98798&txt=FFFFFF&font=playfair-display`,
     alt: `${slug} - vista ${i + 1}`,
     position: i + 1,
   }));
