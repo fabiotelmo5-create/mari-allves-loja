@@ -1,14 +1,30 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Menu, Search, ShoppingBag, User, Heart, X } from 'lucide-react';
 import { Button } from './button';
 import { cn } from '@/lib/utils';
+import { createClient } from '@/lib/supabase/client';
 
 export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const supabase = createClient();
+
+    supabase.auth.getUser().then(({ data }) => setIsLoggedIn(Boolean(data.user)));
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsLoggedIn(Boolean(session?.user));
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
@@ -36,8 +52,8 @@ export function Navbar() {
 
           <div className="hidden md:flex items-center gap-2">
             <Button variant="ghost" size="sm" asChild>
-              <Link href="/conta/login">
-                <User className="h-4 w-4" /> Entrar
+              <Link href={isLoggedIn ? '/conta' : '/conta/login'}>
+                <User className="h-4 w-4" /> {isLoggedIn ? 'Minha conta' : 'Entrar'}
               </Link>
             </Button>
             <Button variant="ghost" size="sm" asChild>
@@ -82,7 +98,9 @@ export function Navbar() {
                 />
               </div>
             )}
-            <Link href="/conta/login" className="block py-2 text-foreground hover:text-rosé-700">Entrar</Link>
+            <Link href={isLoggedIn ? '/conta' : '/conta/login'} className="block py-2 text-foreground hover:text-rosé-700">
+              {isLoggedIn ? 'Minha conta' : 'Entrar'}
+            </Link>
             <Link href="/carrinho" className="block py-2 text-foreground hover:text-rosé-700">Carrinho</Link>
           </div>
         </div>
