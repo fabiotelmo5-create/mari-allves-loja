@@ -3,9 +3,11 @@ import Link from 'next/link';
 import { ProductCard } from '@/components/product-card';
 import { Button } from '@/components/button';
 import {
+  getCategoryBySlug,
   getProductsByCategory,
-  CATEGORIES,
-} from '@/lib/mock-data';
+} from '@/lib/catalog';
+
+export const revalidate = 60;
 
 export default async function CategoryPage({
   params,
@@ -13,8 +15,10 @@ export default async function CategoryPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const products = getProductsByCategory(slug);
-  const category = CATEGORIES.find((c) => c.slug === slug);
+  const [category, products] = await Promise.all([
+    getCategoryBySlug(slug),
+    getProductsByCategory(slug),
+  ]);
 
   if (!category || products.length === 0) {
     notFound();

@@ -1,9 +1,11 @@
 import Link from 'next/link';
 import { ProductCard } from '@/components/product-card';
-import { getNewArrivals } from '@/lib/mock-data';
+import { getNewArrivals } from '@/lib/catalog';
 
-export default function NovidadesPage() {
-  const products = getNewArrivals();
+export const revalidate = 60;
+
+export default async function NovidadesPage() {
+  const products = await getNewArrivals(8);
   return (
     <main className="flex-1">
       <div className="max-w-7xl mx-auto px-4 py-8">

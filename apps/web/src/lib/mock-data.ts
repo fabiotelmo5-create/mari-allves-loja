@@ -33,7 +33,7 @@ export interface Product {
     lengthCm?: number;
     sleeveCm?: number;
   };
-  status: 'PUBLICADO' | 'RASCUNHO' | 'INATIVO';
+  status: 'PUBLICADO' | 'RASCUNHO' | 'INATIVO' | 'ARQUIVADO';
   createdAt: string;
 }
 

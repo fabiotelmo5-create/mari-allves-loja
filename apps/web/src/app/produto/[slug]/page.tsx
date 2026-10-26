@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { getProductBySlug } from '@/lib/mock-data';
+import { getProductBySlug } from '@/lib/catalog';
 import { formatPrice } from '@/lib/utils';
 import { ProductPurchase } from '@/components/product-purchase';
 
@@ -11,7 +11,7 @@ export default async function ProductPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const product = getProductBySlug(slug);
+  const product = await getProductBySlug(slug);
 
   if (!product) {
     notFound();

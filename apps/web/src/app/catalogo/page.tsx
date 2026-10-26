@@ -1,9 +1,14 @@
 import Link from 'next/link';
 import { ProductCard } from '@/components/product-card';
-import { CATEGORIES, getFeaturedProducts } from '@/lib/mock-data';
+import { listCategories, getFeaturedProducts } from '@/lib/catalog';
 
-export default function CatalogoPage() {
-  const featured = getFeaturedProducts();
+export const revalidate = 60;
+
+export default async function CatalogoPage() {
+  const [categories, featured] = await Promise.all([
+    listCategories(),
+    getFeaturedProducts(8),
+  ]);
   return (
     <main className="flex-1">
       <div className="max-w-7xl mx-auto px-4 py-8">
@@ -14,7 +19,7 @@ export default function CatalogoPage() {
         </nav>
         <h1 className="text-3xl font-serif text-rosé-700 mb-8">Catálogo</h1>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {CATEGORIES.map((cat) => (
+          {categories.map((cat) => (
             <Link
               key={cat.slug}
               href={`/categoria/${cat.slug}`}

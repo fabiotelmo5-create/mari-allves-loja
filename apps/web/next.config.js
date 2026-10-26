@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  transpilePackages: ['@mari-allves/db', '@mari-allves/ui'],
+  serverExternalPackages: ['@prisma/client'],
   images: {
     remotePatterns: [
       {

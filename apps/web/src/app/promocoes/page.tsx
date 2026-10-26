@@ -1,9 +1,11 @@
 import Link from 'next/link';
 import { ProductCard } from '@/components/product-card';
-import { getPromotions } from '@/lib/mock-data';
+import { getPromotions } from '@/lib/catalog';
 
-export default function PromocoesPage() {
-  const products = getPromotions();
+export const revalidate = 60;
+
+export default async function PromocoesPage() {
+  const products = await getPromotions();
   return (
     <main className="flex-1">
       <div className="max-w-7xl mx-auto px-4 py-8">

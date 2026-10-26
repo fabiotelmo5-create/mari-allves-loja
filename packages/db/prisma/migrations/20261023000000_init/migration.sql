@@ -39,7 +39,7 @@ CREATE TABLE "AuditLog" (
 -- CreateTable
 CREATE TABLE "Profile" (
     "id" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
+    "userId" UUID NOT NULL,
     "fullName" TEXT,
     "cpf" TEXT,
     "phone" TEXT,
@@ -54,7 +54,7 @@ CREATE TABLE "Profile" (
 -- CreateTable
 CREATE TABLE "AdminUser" (
     "id" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
+    "userId" UUID NOT NULL,
     "fullName" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "role" "AdminRole" NOT NULL DEFAULT 'ADMIN',

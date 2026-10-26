@@ -3,12 +3,18 @@ import Image from 'next/image';
 import { Star, Truck, Tag, ShieldCheck } from 'lucide-react';
 import { ProductCard } from '@/components/product-card';
 import { Button } from '@/components/button';
-import { getFeaturedProducts, getNewArrivals, getPromotions, CATEGORIES } from '@/lib/mock-data';
+import { getFeaturedProducts, getNewArrivals, getPromotions, listCategories } from '@/lib/catalog';
 
-export default function Home() {
-  const featured = getFeaturedProducts();
-  const newArrivals = getNewArrivals();
-  const promotions = getPromotions();
+// Revalida o catálogo a cada 60s (estoque/preços mudam pelo admin)
+export const revalidate = 60;
+
+export default async function Home() {
+  const [featured, newArrivals, promotions, categories] = await Promise.all([
+    getFeaturedProducts(),
+    getNewArrivals(),
+    getPromotions(),
+    listCategories(),
+  ]);
 
   return (
     <main className="flex-1">
@@ -71,7 +77,7 @@ export default function Home() {
             </Link>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {CATEGORIES.map((cat) => (
+            {categories.map((cat) => (
               <Link
                 key={cat.slug}
                 href={`/categoria/${cat.slug}`}
