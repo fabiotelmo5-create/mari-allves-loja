@@ -1,8 +1,13 @@
 import { Package, ShoppingCart, Users, AlertTriangle } from 'lucide-react';
 import { prisma } from '@mari-allves/db';
+import { requireAdmin } from '@/lib/auth';
 import { formatPrice } from '@/lib/utils';
 
 export default async function AdminDashboardPage() {
+  // Guard também na página (não só no layout): evita consultas durante o
+  // prerender do build e garante a checagem em cada navegação.
+  await requireAdmin();
+
   const [products, published, orders, pendingOrders, customers, stocks, recentOrders, revenue] =
     await Promise.all([
       prisma.product.count(),
