@@ -39,12 +39,12 @@ Legenda: ✅ concluído · 🟡 em andamento · ⬜ não iniciado
 | Fase | Status | O que já existe | O que falta |
 |---|---|---|---|
 | **0 — Descoberta e setup** | 🟡 80% | Monorepo, GitHub, Vercel, Supabase SP, banco criado | Domínio, dados da empresa, logo, produtos reais, conta de pagamento, e-mail |
-| **1 — Fundação** | 🟡 60% | Schema (28 tabelas) + migration aplicada, design system, layouts | Auth real (cliente/admin), RBAC, RLS |
+| **1 — Fundação** | 🟡 90% | Schema (28 tabelas) + migration aplicada, design system, layouts, **Supabase Auth (cadastro/login/logout/senha)**, RBAC admin, RLS no Profile | RLS nas demais tabelas, SMTP próprio |
 | **2 — Catálogo** | 🟡 60% | Todas as páginas, leitura do banco via Prisma, seed (6 produtos) | CRUD no admin, busca, filtros, mais vendidos |
 | **3 — Carrinho e checkout** | 🟡 40% | Carrinho em localStorage, UI de checkout | Persistir carrinho no banco, cupons, frete por CEP, criar pedido |
 | **4 — Pagamentos** | ⬜ 0% | Interface de abstração planejada | Provedor, webhooks, reconciliação |
-| **5 — Área do cliente** | ⬜ 5% | Telas de login/pedidos/favoritos (vazias) | Pedidos reais, rastreio, endereços, dados |
-| **6 — Admin completo** | ⬜ 5% | Tela de login (sem autenticação) | Dashboard, estoque, pedidos, clientes, cupons |
+| **5 — Área do cliente** | 🟡 40% | **Login/cadastro reais**, painel `/conta` com perfil, contadores e logout | Pedidos reais, rastreio, endereços, dados, favoritos |
+| **6 — Admin completo** | 🟡 25% | **Login real com RBAC**, layout do painel, dashboard (produtos/pedidos/clientes/estoque) | CRUD de produtos, estoque, pedidos, clientes, cupons |
 | **7 — Logística** | ⬜ 0% | — | Zonas/CEPs, taxas, prazos, rastreamento |
 | **8 — Legal, LGPD, a11y** | 🟡 50% | Páginas legais escritas, a11y básica | Banner de cookies/consentimento real, revisão jurídica |
 | **9 — Fiscal** | ⬜ 0% | — | Fora do MVP |
@@ -52,11 +52,52 @@ Legenda: ✅ concluído · 🟡 em andamento · ⬜ não iniciado
 
 ### Ordem recomendada a partir daqui
 
-1. **Auth (Fase 1)** — cadastro/login real com Supabase Auth + perfis.
+1. ~~**Auth (Fase 1)** — cadastro/login real com Supabase Auth + perfis.~~ ✅ concluído
 2. **Admin de produtos (Fase 6, recorte)** — sem isso não há como cadastrar produtos reais sem código.
 3. **Pedidos (Fase 3)** — checkout gravando no banco, com baixa de estoque transacional.
 4. **Pagamento (Fase 4)** — depende de conta homologada.
 5. **Logística (Fase 7)** + **Legal/LGPD (Fase 8)** antes do go-live.
+
+## 2.2 Configuração pendente no Supabase (Auth)
+
+Duas configurações precisam ser feitas **no painel do Supabase** (não há como
+fazer por código com a chave anon):
+
+**A. URLs de redirecionamento** (obrigatório para confirmação de e-mail e
+recuperação de senha)
+
+Authentication → URL Configuration:
+
+- **Site URL:** `https://mari-allves-loja.vercel.app`
+- **Redirect URLs:**
+  - `https://mari-allves-loja.vercel.app/auth/callback`
+  - `http://localhost:3000/auth/callback`
+
+Sem isso, os links de e-mail caem em `localhost` e não funcionam em produção.
+
+**B. Envio de e-mail** (recomendado)
+
+O SMTP padrão do Supabase é limitado (poucos e-mails por hora) e costuma cair
+em spam. Opções:
+
+1. **Produção:** configurar SMTP próprio (Resend, SendGrid, Amazon SES) em
+   Authentication → SMTP Settings.
+2. **MVP/validação:** desligar "Confirm email" em Authentication → Providers →
+   Email, para o cadastro entrar direto (a recuperação de senha continua
+   dependendo do item A + SMTP).
+
+## 2.3 Como criar o primeiro administrador
+
+1. A pessoa se cadastra normalmente em `/conta/cadastro`.
+2. No servidor, com o banco configurado:
+
+   ```bash
+   pnpm --filter @mari-allves/db admin:promote email@exemplo.com SUPERADMIN
+   ```
+
+3. Acessa `/admin/login` com o e-mail e a senha dessa conta.
+
+Papéis disponíveis: `SUPERADMIN`, `ADMIN`, `ESTOQUISTA`.
 
 
 ## 3. Definição de "pronto" (DoD)

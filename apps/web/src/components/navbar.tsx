@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { Menu, Search, ShoppingBag, User, Heart, X } from 'lucide-react';
 import { Button } from './button';
 import { cn } from '@/lib/utils';
@@ -11,11 +12,17 @@ export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const pathname = usePathname();
 
+  // Revalida a cada navegação: o login/logout acontece em server action,
+  // então o layout não remonta sozinho.
   useEffect(() => {
     const supabase = createClient();
+    let active = true;
 
-    supabase.auth.getUser().then(({ data }) => setIsLoggedIn(Boolean(data.user)));
+    supabase.auth.getSession().then(({ data }) => {
+      if (active) setIsLoggedIn(Boolean(data.session?.user));
+    });
 
     const {
       data: { subscription },
@@ -23,8 +30,11 @@ export function Navbar() {
       setIsLoggedIn(Boolean(session?.user));
     });
 
-    return () => subscription.unsubscribe();
-  }, []);
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
+  }, [pathname]);
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
