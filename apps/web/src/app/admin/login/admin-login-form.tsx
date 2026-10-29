@@ -3,7 +3,7 @@
 import { useActionState } from 'react';
 import { Button } from '@/components/button';
 import { Mail, Lock, ShieldCheck, ArrowRight, AlertCircle } from 'lucide-react';
-import { adminSignInAction, type AdminAuthState } from '../actions';
+import { adminSignInAction, type AdminAuthState } from '@/app/admin/auth-actions';
 
 export function AdminLoginForm({ initialError }: { initialError?: string }) {
   const [state, formAction, pending] = useActionState<AdminAuthState, FormData>(
@@ -25,8 +25,7 @@ export function AdminLoginForm({ initialError }: { initialError?: string }) {
 
         <div className="space-y-2">
           <label htmlFor="email" className="text-sm font-medium text-foreground flex items-center gap-2">
-            <Mail className="h-4 w-4 text-rosé-400" />
-            E-mail administrativo
+            <Mail className="h-4 w-4 text-rosé-400" /> E-mail administrativo
           </label>
           <input
             id="email"
@@ -41,8 +40,7 @@ export function AdminLoginForm({ initialError }: { initialError?: string }) {
 
         <div className="space-y-2">
           <label htmlFor="password" className="text-sm font-medium text-foreground flex items-center gap-2">
-            <Lock className="h-4 w-4 text-rosé-400" />
-            Senha
+            <Lock className="h-4 w-4 text-rosé-400" /> Senha
           </label>
           <input
             id="password"
