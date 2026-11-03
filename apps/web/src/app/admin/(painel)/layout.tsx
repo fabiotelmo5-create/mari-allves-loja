@@ -17,7 +17,7 @@ export const metadata = { title: 'Painel — Mari Allves' };
 
 const NAV = [
   { href: '/admin', label: 'Visão geral', icon: LayoutDashboard, ready: true },
-  { href: '/admin/produtos', label: 'Produtos', icon: Package, ready: false },
+  { href: '/admin/produtos', label: 'Produtos', icon: Package, ready: true },
   { href: '/admin/pedidos', label: 'Pedidos', icon: ShoppingCart, ready: false },
   { href: '/admin/estoque', label: 'Estoque', icon: Boxes, ready: false },
   { href: '/admin/clientes', label: 'Clientes', icon: Users, ready: false },

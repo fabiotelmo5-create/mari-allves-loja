@@ -41,14 +41,20 @@ export default async function ProductPage({
           {/* Galeria de imagens */}
           <div className="space-y-4">
             <div className="aspect-square bg-rosé-50 border border-border rounded-xl relative overflow-hidden">
-              <Image
-                src={product.images[0].url}
-                alt={product.images[0].alt}
-                fill
-                className="object-cover object-center"
-                sizes="(max-width: 768px) 100vw, 50vw"
-                priority
-              />
+              {product.images[0] ? (
+                <Image
+                  src={product.images[0].url}
+                  alt={product.images[0].alt}
+                  fill
+                  className="object-cover object-center"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  priority
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center text-sm uppercase tracking-[0.2em] text-rosé-400">
+                  Mari Allves
+                </div>
+              )}
             </div>
             <div className="grid grid-cols-4 gap-2">
               {product.images.slice(0, 4).map((img) => (

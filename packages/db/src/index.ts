@@ -1,4 +1,4 @@
-export { PrismaClient, Prisma } from '@prisma/client';
+export { PrismaClient, Prisma, ProductStatus } from '@prisma/client';
 
 import { PrismaClient } from '@prisma/client';
 

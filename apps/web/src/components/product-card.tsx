@@ -19,14 +19,20 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <article className="group border border-border rounded-xl p-4 hover:border-rosé-300 transition-colors bg-white">
       <div className="relative aspect-square mb-3 overflow-hidden rounded-lg bg-rosé-50">
-        <Image
-          src={firstImage.url}
-          alt={firstImage.alt}
-          fill
-          className="object-cover object-center group-hover:scale-105 transition-transform duration-300"
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 25vw"
-          priority
-        />
+        {firstImage ? (
+          <Image
+            src={firstImage.url}
+            alt={firstImage.alt}
+            fill
+            className="object-cover object-center group-hover:scale-105 transition-transform duration-300"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 25vw"
+            priority
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center text-xs uppercase tracking-[0.2em] text-rosé-400">
+            Mari Allves
+          </div>
+        )}
         {hasPromo && (
           <span className="absolute top-2 left-2 bg-rosé-700 text-white text-xs font-bold px-2 py-1 rounded">
             Promoção

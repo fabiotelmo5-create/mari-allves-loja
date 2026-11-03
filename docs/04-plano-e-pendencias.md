@@ -32,7 +32,7 @@
 
 > Previsão total do **MVP (Fases 0–6 + 8 mínimo)**: ~10–16 semanas. "MVP rápido (semanas)" exige escopo enxuto e decisões rápidas.
 
-## 2.1 Status atual (atualizado em 2026-10-26)
+## 2.1 Status atual (atualizado em 2026-11-03)
 
 Legenda: ✅ concluído · 🟡 em andamento · ⬜ não iniciado
 
@@ -40,11 +40,11 @@ Legenda: ✅ concluído · 🟡 em andamento · ⬜ não iniciado
 |---|---|---|---|
 | **0 — Descoberta e setup** | 🟡 80% | Monorepo, GitHub, Vercel, Supabase SP, banco criado | Domínio, dados da empresa, logo, produtos reais, conta de pagamento, e-mail |
 | **1 — Fundação** | 🟡 90% | Schema (28 tabelas) + migration aplicada, design system, layouts, **Supabase Auth (cadastro/login/logout/senha)**, RBAC admin, RLS no Profile | RLS nas demais tabelas, SMTP próprio |
-| **2 — Catálogo** | 🟡 60% | Todas as páginas, leitura do banco via Prisma, seed (6 produtos) | CRUD no admin, busca, filtros, mais vendidos |
+| **2 — Catálogo** | 🟡 75% | Todas as páginas, leitura do banco via Prisma, seed (6 produtos), **CRUD de produtos no admin** (criar/editar/arquivar, variações e estoque com histórico) | Busca, filtros, mais vendidos |
 | **3 — Carrinho e checkout** | 🟡 40% | Carrinho em localStorage, UI de checkout | Persistir carrinho no banco, cupons, frete por CEP, criar pedido |
 | **4 — Pagamentos** | ⬜ 0% | Interface de abstração planejada | Provedor, webhooks, reconciliação |
 | **5 — Área do cliente** | 🟡 40% | **Login/cadastro reais**, painel `/conta` com perfil, contadores e logout | Pedidos reais, rastreio, endereços, dados, favoritos |
-| **6 — Admin completo** | 🟡 25% | **Login real com RBAC**, layout do painel, dashboard (produtos/pedidos/clientes/estoque) | CRUD de produtos, estoque, pedidos, clientes, cupons |
+| **6 — Admin completo** | 🟡 40% | **Login real com RBAC**, layout do painel, dashboard, **CRUD de produtos com variações/estoque/auditoria** | Estoque, pedidos, clientes, cupons |
 | **7 — Logística** | ⬜ 0% | — | Zonas/CEPs, taxas, prazos, rastreamento |
 | **8 — Legal, LGPD, a11y** | 🟡 50% | Páginas legais escritas, a11y básica | Banner de cookies/consentimento real, revisão jurídica |
 | **9 — Fiscal** | ⬜ 0% | — | Fora do MVP |
@@ -53,7 +53,7 @@ Legenda: ✅ concluído · 🟡 em andamento · ⬜ não iniciado
 ### Ordem recomendada a partir daqui
 
 1. ~~**Auth (Fase 1)** — cadastro/login real com Supabase Auth + perfis.~~ ✅ concluído
-2. **Admin de produtos (Fase 6, recorte)** — sem isso não há como cadastrar produtos reais sem código.
+2. ~~**Admin de produtos (Fase 6, recorte)** — criar, editar, publicar, arquivar, variações e estoque.~~ ✅ concluído
 3. **Pedidos (Fase 3)** — checkout gravando no banco, com baixa de estoque transacional.
 4. **Pagamento (Fase 4)** — depende de conta homologada.
 5. **Logística (Fase 7)** + **Legal/LGPD (Fase 8)** antes do go-live.
@@ -98,6 +98,16 @@ em spam. Opções:
 3. Acessa `/admin/login` com o e-mail e a senha dessa conta.
 
 Papéis disponíveis: `SUPERADMIN`, `ADMIN`, `ESTOQUISTA`.
+
+## 2.4 Correção de schema (2026-11-03)
+
+A migração inicial não tinha três colunas já previstas no schema Prisma:
+`StockMovement.adminUserId`, `Order.adminUserId` e `OrderItem.productId`.
+A migração `20261103000000_fix_missing_admin_product_fks` adiciona as colunas e
+as FKs opcionais, sem perda de dados. Já aplicada no Supabase.
+
+Também foi corrigido o fallback de produto sem imagem (card e página do produto)
+e adicionada a validação que exige imagem principal para publicar.
 
 
 ## 3. Definição de "pronto" (DoD)

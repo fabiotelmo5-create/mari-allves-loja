@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Package, ShoppingCart, Users, AlertTriangle } from 'lucide-react';
 import { prisma } from '@mari-allves/db';
 import { requireAdmin } from '@/lib/auth';
@@ -131,13 +132,16 @@ export default async function AdminDashboardPage() {
           </p>
 
           <div className="mt-6 space-y-2 border-t border-border pt-4">
-            <p className="text-xs font-medium text-foreground">Próximos passos</p>
-            <div className="flex items-center justify-between rounded-lg bg-rosé-50 px-3 py-2 text-xs text-rosé-700">
-              Cadastrar produtos
-              <span className="text-[9px] uppercase tracking-wide">em breve</span>
-            </div>
+            <p className="text-xs font-medium text-foreground">Cadastro do catálogo</p>
+            <Link
+              href="/admin/produtos"
+              className="flex items-center justify-between rounded-lg bg-rosé-50 px-3 py-2 text-xs font-medium text-rosé-700 hover:bg-rosé-100"
+            >
+              Gerenciar produtos
+              <span aria-hidden>→</span>
+            </Link>
             <p className="text-[11px] text-muted-foreground">
-              O cadastro de produtos entra na próxima entrega do painel.
+              Cadastre produtos, variações e estoque inicial.
             </p>
           </div>
         </div>
