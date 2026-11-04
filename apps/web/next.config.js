@@ -2,6 +2,12 @@
 const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ['@mari-allves/db', '@mari-allves/ui'],
+  experimental: {
+    // Permite enviar a foto do produto junto com o formulário do painel.
+    serverActions: {
+      bodySizeLimit: '5mb',
+    },
+  },
   serverExternalPackages: ['@prisma/client'],
   // Copia o Query Engine do Prisma para o bundle da função serverless.
   // Sem isso, em monorepo pnpm, o binário fica fora do bundle e o runtime falha

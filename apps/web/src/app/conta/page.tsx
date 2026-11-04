@@ -3,6 +3,7 @@ import { Package, Heart, LogOut, ChevronRight, CheckCircle2 } from 'lucide-react
 import { prisma } from '@mari-allves/db';
 import { requireUser, getCurrentProfile } from '@/lib/auth';
 import { Button } from '@/components/button';
+import { ThemeToggle } from '@/components/theme-toggle';
 import { signOutAction } from './actions';
 
 export const metadata = { title: 'Minha conta — Mari Allves' };
@@ -88,6 +89,13 @@ export default async function ContaPage({
               <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-rosé-700" />
             </Link>
           ))}
+        </div>
+
+        <div className="mt-8 space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            Aparência
+          </p>
+          <ThemeToggle />
         </div>
 
         <div className="mt-8">

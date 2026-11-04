@@ -75,6 +75,7 @@ function toProduct(row: ProductWithRelations): Product {
 export interface CategorySummary {
   name: string;
   slug: string;
+  imageUrl?: string | null;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -87,7 +88,7 @@ export async function listCategories(): Promise<CategorySummary[]> {
   return prisma.category.findMany({
     where: { active: true },
     orderBy: { position: 'asc' },
-    select: { name: true, slug: true },
+    select: { name: true, slug: true, imageUrl: true },
   });
 }
 
@@ -96,7 +97,7 @@ export async function getCategoryBySlug(slug: string): Promise<CategorySummary |
 
   return prisma.category.findFirst({
     where: { slug, active: true },
-    select: { name: true, slug: true },
+    select: { name: true, slug: true, imageUrl: true },
   });
 }
 

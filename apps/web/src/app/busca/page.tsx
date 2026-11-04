@@ -35,7 +35,7 @@ export default async function BuscaPage({
           />
           <button
             type="submit"
-            className="h-10 px-4 rounded-lg bg-rosé-700 text-white text-sm font-medium hover:bg-rosé-800 transition-colors"
+            className="h-10 px-4 rounded-lg bg-rosé-700 text-white text-sm font-medium hover:bg-rosé-600 transition-colors"
           >
             Buscar
           </button>

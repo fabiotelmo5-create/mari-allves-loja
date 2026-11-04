@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import { Mail, Clock, MapPin } from 'lucide-react';
 
@@ -24,9 +25,24 @@ export function Footer() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 mb-10">
           <div className="col-span-2 md:col-span-1">
-            <Link href="/" className="flex items-center gap-1 mb-4">
-              <span className="text-rosé-700 font-serif font-bold text-lg tracking-tight">Mari</span>
-              <span className="text-rosé-400 font-serif font-bold text-lg tracking-tight">Allves</span>
+            <Link href="/" className="mb-4 flex items-center gap-2">
+              <Image
+                src="/logo-mari-allves.svg"
+                alt=""
+                width={36}
+                height={36}
+                className="h-9 w-9"
+                unoptimized
+              />
+              <span className="flex flex-col leading-none">
+                <span className="flex items-baseline gap-1 font-serif text-lg font-bold tracking-tight">
+                  <span className="text-rosé-700">Mari</span>
+                  <span className="text-rosé-400">Allves</span>
+                </span>
+                <span className="mt-1 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                  Moda Modesta
+                </span>
+              </span>
             </Link>
             <p className="text-xs text-muted-foreground leading-relaxed">
               Moda modesta com elegância, delicadeza e profissionalismo.

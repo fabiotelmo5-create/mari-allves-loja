@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" role="img" aria-label="Ilustração de blusa">
+  <rect width="400" height="500" fill="#FFF9FA"/>
+  <circle cx="200" cy="235" r="132" fill="#FDF0F3"/>
+  <g fill="none" stroke="#A85F70" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M158 165l42 22 42-22 32 38-22 38-18-12v126c-34 14-74 14-108 0V229l-18 12-22-38z" fill="#FDF0F3"/>
+    <path d="M200 187v168"/>
+    <path d="M168 178c8 18 56 18 64 0"/>
+    <path d="M140 220l18 10"/>
+    <path d="M260 220l-18 10"/>
+  </g>
+  <g fill="#C98798">
+    <circle cx="200" cy="255" r="4"/>
+    <circle cx="200" cy="285" r="4"/>
+    <circle cx="200" cy="315" r="4"/>
+  </g>
+</svg>

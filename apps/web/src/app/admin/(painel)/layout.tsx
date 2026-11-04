@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import {
   LayoutDashboard,
@@ -8,6 +9,7 @@ import {
   Ticket,
   LogOut,
   Store,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { requireAdmin } from '@/lib/auth';
 import { signOutAction } from '@/app/conta/actions';
@@ -18,6 +20,7 @@ export const metadata = { title: 'Painel — Mari Allves' };
 const NAV = [
   { href: '/admin', label: 'Visão geral', icon: LayoutDashboard, ready: true },
   { href: '/admin/produtos', label: 'Produtos', icon: Package, ready: true },
+  { href: '/admin/categorias', label: 'Categorias', icon: ImageIcon, ready: true },
   { href: '/admin/pedidos', label: 'Pedidos', icon: ShoppingCart, ready: true },
   { href: '/admin/estoque', label: 'Estoque', icon: Boxes, ready: false },
   { href: '/admin/clientes', label: 'Clientes', icon: Users, ready: false },
@@ -32,9 +35,19 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <header className="border-b border-border bg-white">
         <div className="flex h-14 items-center justify-between px-4 lg:px-6">
           <div className="flex items-center gap-3">
-            <Link href="/admin" className="flex items-center gap-1">
-              <span className="text-rosé-700 font-serif font-bold text-lg tracking-tight">Mari</span>
-              <span className="text-rosé-400 font-serif font-bold text-lg tracking-tight">Allves</span>
+            <Link href="/admin" className="flex items-center gap-2">
+              <Image
+                src="/logo-mari-allves.svg"
+                alt=""
+                width={34}
+                height={34}
+                className="h-8 w-8"
+                unoptimized
+              />
+              <span className="flex items-baseline gap-1 font-serif text-lg font-bold tracking-tight">
+                <span className="text-rosé-700">Mari</span>
+                <span className="text-rosé-400">Allves</span>
+              </span>
             </Link>
             <span className="rounded-full bg-rosé-50 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-rosé-700">
               Admin

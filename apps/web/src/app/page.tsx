@@ -4,6 +4,7 @@ import { Star, Truck, Tag, ShieldCheck } from 'lucide-react';
 import { ProductCard } from '@/components/product-card';
 import { Button } from '@/components/button';
 import { getNewArrivals, getPromotions, listCategories } from '@/lib/catalog';
+import { getCategoryImage } from '@/lib/category-images';
 
 // Revalida o catálogo a cada 60s (estoque/preços mudam pelo admin)
 export const revalidate = 60;
@@ -75,19 +76,31 @@ export default async function Home() {
               Ver todas →
             </Link>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {categories.map((cat) => (
-              <Link
-                key={cat.slug}
-                href={`/categoria/${cat.slug}`}
-                className="group block aspect-square border border-border rounded-xl bg-white hover:bg-rosé-50 hover:border-rosé-200 transition-colors flex flex-col items-center justify-center py-4"
-              >
-                <div className="w-12 h-12 rounded-full bg-rosé-100 flex items-center justify-center mb-2 group-hover:bg-rosé-200 transition-colors">
-                  <span className="text-2xl">{cat.slug === 'saias' ? '👗' : cat.slug === 'blusas' ? '👚' : cat.slug === 'vestidos' ? '👰' : '👜'}</span>
-                </div>
-                <span className="text-sm font-medium text-rosé-700 group-hover:text-rosé-600">{cat.name}</span>
-              </Link>
-            ))}
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            {categories.map((cat) => {
+              const image = getCategoryImage(cat.imageUrl, cat.slug);
+
+              return (
+                <Link
+                  key={cat.slug}
+                  href={`/categoria/${cat.slug}`}
+                  className="group relative block aspect-[4/5] overflow-hidden rounded-xl border border-border bg-rosé-50 transition-colors hover:border-rosé-300"
+                >
+                  <Image
+                    src={image}
+                    alt={`Categoria ${cat.name}`}
+                    fill
+                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    sizes="(max-width: 640px) 50vw, 25vw"
+                    unoptimized={image.endsWith('.svg')}
+                  />
+                  <span className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/5 to-transparent" />
+                  <span className="absolute bottom-4 left-4 right-4 text-base font-medium text-white drop-shadow">
+                    {cat.name}
+                  </span>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>

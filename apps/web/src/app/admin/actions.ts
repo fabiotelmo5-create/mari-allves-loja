@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { prisma, type ProductStatus } from '@mari-allves/db';
 import { requireAdmin } from '@/lib/auth';
+import { deleteImageAsset, imageAssetIdFromUrl, resolveImage } from '@/lib/image-upload';
 
 export type ProductFormState = { error?: string } | null;
 
@@ -29,6 +30,39 @@ function slugify(value: string) {
     .replace(/\p{Mn}/gu, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
+}
+
+function generateProductSku(name: string) {
+  const base = slugify(name).replace(/-/g, '').slice(0, 12).toUpperCase() || 'PROD';
+  const suffix = Math.random().toString(36).slice(2, 6).toUpperCase();
+  return `MA-${base}-${suffix}`;
+}
+
+function buildVariantSku(productSku: string, index: number) {
+  return `${productSku.slice(0, 50)}-${String(index + 1).padStart(3, '0')}`;
+}
+
+function assignVariantSkus(
+  variants: VariantInput[],
+  productSku: string,
+  usedSkus: Set<string>
+) {
+  return variants.map((variant, index) => {
+    if (variant.sku) {
+      usedSkus.add(variant.sku);
+      return variant;
+    }
+
+    const base = buildVariantSku(productSku, index);
+    let candidate = base;
+    let counter = 2;
+    while (usedSkus.has(candidate)) {
+      candidate = `${base}-${counter}`;
+      counter += 1;
+    }
+    usedSkus.add(candidate);
+    return { ...variant, sku: candidate };
+  });
 }
 
 function parseMoneyToCents(value: FormDataEntryValue | null) {
@@ -75,10 +109,12 @@ function parseVariants(value: FormDataEntryValue | null): VariantInput[] | null 
 
     const skus = new Set<string>();
     for (const variant of variants) {
-      if (!variant.size || !variant.sku) return null;
+      if (!variant.size) return null;
       if (!Number.isInteger(variant.initialStock) || variant.initialStock < 0) return null;
-      if (skus.has(variant.sku)) return null;
-      skus.add(variant.sku);
+      if (variant.sku) {
+        if (skus.has(variant.sku)) return null;
+        skus.add(variant.sku);
+      }
     }
 
     return variants;
@@ -92,21 +128,6 @@ function parseStatus(value: FormDataEntryValue | null): ProductStatus | null {
   return PRODUCT_STATUSES.includes(status as ProductStatus)
     ? (status as ProductStatus)
     : null;
-}
-
-function parseImageUrl(value: FormDataEntryValue | null) {
-  const url = String(value ?? '').trim();
-  if (!url) return { value: undefined, error: undefined };
-
-  try {
-    const parsed = new URL(url);
-    if (!['http:', 'https:'].includes(parsed.protocol)) {
-      return { value: undefined, error: 'A imagem precisa usar URL http ou https.' };
-    }
-    return { value: parsed.toString(), error: undefined };
-  } catch {
-    return { value: undefined, error: 'URL da imagem inválida.' };
-  }
 }
 
 async function revalidateProducts() {
@@ -123,30 +144,28 @@ export async function createProductAction(
   const { admin } = await requireAdmin();
 
   const name = String(formData.get('name') ?? '').trim();
-  const slug = slugify(String(formData.get('slug') ?? name));
-  const sku = String(formData.get('sku') ?? '').trim().toUpperCase();
+  const slugInput = String(formData.get('slug') ?? '').trim();
+  const slug = slugify(slugInput || name);
+  const providedSku = String(formData.get('sku') ?? '').trim().toUpperCase();
+  const sku = providedSku || generateProductSku(name);
   const categoryId = String(formData.get('categoryId') ?? '').trim();
   const priceCents = parseMoneyToCents(formData.get('price'));
   const previousPriceCents = parseOptionalMoneyToCents(formData.get('previousPrice'));
   const status = parseStatus(formData.get('status'));
-  const variants = parseVariants(formData.get('variants'));
-  const image = parseImageUrl(formData.get('imageUrl'));
+  const parsedVariants = parseVariants(formData.get('variants'));
 
-  if (name.length < 3) return { error: 'Informe um nome com pelo menos 3 caracteres.' };
-  if (slug.length < 3) return { error: 'Informe um slug válido.' };
-  if (sku.length < 3) return { error: 'Informe um SKU válido.' };
+  if (name.length < 3) return { error: 'Informe o nome do produto.' };
+  if (slug.length < 3) return { error: 'O endereço da página precisa ter pelo menos 3 caracteres.' };
   if (!categoryId) return { error: 'Selecione uma categoria.' };
-  if (priceCents === null) return { error: 'Informe um preço válido.' };
+  if (priceCents === null) return { error: 'Informe o preço de venda.' };
   if (previousPriceCents === null) return { error: 'Preço anterior inválido.' };
   if (previousPriceCents !== undefined && previousPriceCents <= priceCents) {
-    return { error: 'O preço anterior deve ser maior que o preço atual.' };
+    return { error: 'O preço anterior precisa ser maior que o preço atual.' };
   }
-  if (!status) return { error: 'Status inválido.' };
-  if (!variants) return { error: 'Inclua ao menos uma variação com SKU e estoque válidos.' };
-  if (image.error) return { error: image.error };
-  if (status === 'PUBLICADO' && !image.value) {
-    return { error: 'Para publicar, informe a URL da imagem principal.' };
-  }
+  if (!status) return { error: 'Visibilidade inválida.' };
+  if (!parsedVariants) return { error: 'Inclua pelo menos um tamanho com estoque válido.' };
+
+  const variants = assignVariantSkus(parsedVariants, sku, new Set());
 
   const [category, duplicate] = await Promise.all([
     prisma.category.findFirst({ where: { id: categoryId, active: true }, select: { id: true } }),
@@ -157,7 +176,7 @@ export async function createProductAction(
   ]);
 
   if (!category) return { error: 'Categoria inválida ou inativa.' };
-  if (duplicate) return { error: 'Slug ou SKU já cadastrado.' };
+  if (duplicate) return { error: 'Já existe um produto com esse endereço ou código. Ajuste o nome ou o código.' };
 
   const description = String(formData.get('description') ?? '').trim();
   const composition = String(formData.get('composition') ?? '').trim();
@@ -168,7 +187,13 @@ export async function createProductAction(
   const depthCm = parseOptionalPositiveInteger(formData.get('depthCm'));
 
   if ([weightG, widthCm, heightCm, depthCm].some((value) => value === null)) {
-    return { error: 'Peso e dimensões devem ser números inteiros iguais ou maiores que zero.' };
+    return { error: 'Peso e medidas devem ser números inteiros iguais ou maiores que zero.' };
+  }
+
+  const image = await resolveImage(formData);
+  if (image.error) return { error: image.error };
+  if (status === 'PUBLICADO' && !image.value) {
+    return { error: 'Envie uma foto para publicar o produto.' };
   }
 
   try {
@@ -239,6 +264,7 @@ export async function createProductAction(
       });
     });
   } catch {
+    await deleteImageAsset(image.assetId);
     return { error: 'Não foi possível criar o produto. Verifique os dados e tente novamente.' };
   }
 
@@ -253,37 +279,51 @@ export async function updateProductAction(
   const { admin } = await requireAdmin();
   const id = String(formData.get('id') ?? '').trim();
   const name = String(formData.get('name') ?? '').trim();
-  const slug = slugify(String(formData.get('slug') ?? name));
-  const sku = String(formData.get('sku') ?? '').trim().toUpperCase();
+  const slugInput = String(formData.get('slug') ?? '').trim();
+  const slug = slugify(slugInput || name);
+  const providedSku = String(formData.get('sku') ?? '').trim().toUpperCase();
   const categoryId = String(formData.get('categoryId') ?? '').trim();
   const priceCents = parseMoneyToCents(formData.get('price'));
   const previousPriceCents = parseOptionalMoneyToCents(formData.get('previousPrice'));
   const status = parseStatus(formData.get('status'));
-  const variants = parseVariants(formData.get('variants'));
-  const image = parseImageUrl(formData.get('imageUrl'));
+  const parsedVariants = parseVariants(formData.get('variants'));
 
   if (!id) return { error: 'Produto não encontrado.' };
-  if (name.length < 3 || slug.length < 3 || sku.length < 3) {
-    return { error: 'Nome, slug e SKU são obrigatórios.' };
+  if (name.length < 3 || slug.length < 3) {
+    return { error: 'Informe o nome do produto.' };
   }
   if (!categoryId) return { error: 'Selecione uma categoria.' };
-  if (priceCents === null) return { error: 'Informe um preço válido.' };
+  if (priceCents === null) return { error: 'Informe o preço de venda.' };
   if (previousPriceCents === null) return { error: 'Preço anterior inválido.' };
   if (previousPriceCents !== undefined && previousPriceCents <= priceCents) {
-    return { error: 'O preço anterior deve ser maior que o preço atual.' };
+    return { error: 'O preço anterior precisa ser maior que o preço atual.' };
   }
-  if (!status) return { error: 'Status inválido.' };
-  if (!variants) return { error: 'Inclua ao menos uma variação com SKU e estoque válidos.' };
-  if (image.error) return { error: image.error };
-  if (status === 'PUBLICADO' && !image.value) {
-    return { error: 'Para publicar, informe a URL da imagem principal.' };
-  }
+  if (!status) return { error: 'Visibilidade inválida.' };
+  if (!parsedVariants) return { error: 'Inclua pelo menos um tamanho com estoque válido.' };
 
-  const [existing, category, duplicate, variantSkuConflict] = await Promise.all([
-    prisma.product.findUnique({
-      where: { id },
-      select: { id: true, status: true, publishedAt: true },
-    }),
+  const existing = await prisma.product.findUnique({
+    where: { id },
+    select: { id: true, status: true, publishedAt: true, sku: true },
+  });
+  if (!existing) return { error: 'Produto não encontrado.' };
+
+  const sku = providedSku || existing.sku || generateProductSku(name);
+
+  const existingVariants = await prisma.productVariant.findMany({
+    where: { productId: id },
+    include: {
+      stock: { include: { _count: { select: { movements: true } } } },
+      _count: { select: { orderItems: true, cartItems: true } },
+    },
+  });
+
+  const variants = assignVariantSkus(
+    parsedVariants,
+    sku,
+    new Set(existingVariants.map((variant) => variant.sku))
+  );
+
+  const [category, duplicate, variantSkuConflict] = await Promise.all([
     prisma.category.findFirst({ where: { id: categoryId, active: true }, select: { id: true } }),
     prisma.product.findFirst({
       where: { id: { not: id }, OR: [{ slug }, { sku }] },
@@ -298,20 +338,11 @@ export async function updateProductAction(
     }),
   ]);
 
-  if (!existing) return { error: 'Produto não encontrado.' };
   if (!category) return { error: 'Categoria inválida ou inativa.' };
-  if (duplicate) return { error: 'Slug ou SKU já cadastrado em outro produto.' };
+  if (duplicate) return { error: 'Já existe outro produto com esse endereço ou código.' };
   if (variantSkuConflict) {
-    return { error: `O SKU ${variantSkuConflict.sku} já pertence a outro produto.` };
+    return { error: `O código ${variantSkuConflict.sku} já pertence a outro produto.` };
   }
-
-  const existingVariants = await prisma.productVariant.findMany({
-    where: { productId: id },
-    include: {
-      stock: { include: { _count: { select: { movements: true } } } },
-      _count: { select: { orderItems: true, cartItems: true } },
-    },
-  });
 
   const incomingIds = new Set(
     variants
@@ -329,7 +360,21 @@ export async function updateProductAction(
   const depthCm = parseOptionalPositiveInteger(formData.get('depthCm'));
 
   if ([weightG, widthCm, heightCm, depthCm].some((value) => value === null)) {
-    return { error: 'Peso e dimensões devem ser números inteiros iguais ou maiores que zero.' };
+    return { error: 'Peso e medidas devem ser números inteiros iguais ou maiores que zero.' };
+  }
+
+  const image = await resolveImage(formData);
+  if (image.error) return { error: image.error };
+
+  const removeImage = formData.get('removeImage') === 'on';
+  const currentImage = await prisma.productImage.findFirst({
+    where: { productId: id },
+    orderBy: { position: 'asc' },
+  });
+  const finalImageUrl = image.value ?? (removeImage ? undefined : currentImage?.url);
+
+  if (status === 'PUBLICADO' && !finalImageUrl) {
+    return { error: 'Envie uma foto para publicar o produto.' };
   }
 
   try {
@@ -355,11 +400,6 @@ export async function updateProductAction(
         },
       });
 
-      const currentImage = await tx.productImage.findFirst({
-        where: { productId: id },
-        orderBy: { position: 'asc' },
-      });
-
       if (image.value && currentImage) {
         await tx.productImage.update({
           where: { id: currentImage.id },
@@ -369,7 +409,7 @@ export async function updateProductAction(
         await tx.productImage.create({
           data: { productId: id, url: image.value, alt: name, position: 0 },
         });
-      } else if (currentImage) {
+      } else if (removeImage && currentImage) {
         await tx.productImage.delete({ where: { id: currentImage.id } });
       }
 
@@ -475,9 +515,15 @@ export async function updateProductAction(
       });
     });
   } catch {
+    await deleteImageAsset(image.assetId);
     return {
       error: 'Não foi possível salvar as alterações. Verifique os dados e tente novamente.',
     };
+  }
+
+  const oldAssetId = imageAssetIdFromUrl(currentImage?.url);
+  if (oldAssetId && (removeImage || (image.value && image.value !== currentImage?.url))) {
+    await deleteImageAsset(oldAssetId);
   }
 
   await revalidateProducts();

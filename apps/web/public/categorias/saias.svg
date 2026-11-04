@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" role="img" aria-label="Ilustração de saia">
+  <rect width="400" height="500" fill="#FFF9FA"/>
+  <circle cx="200" cy="230" r="132" fill="#FDF0F3"/>
+  <g fill="none" stroke="#A85F70" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M148 170h104l-10 32H158z" fill="#F8E1E7"/>
+    <path d="M158 202h84l40 150c-54 20-110 20-164 0z" fill="#FDF0F3"/>
+    <path d="M200 202v152"/>
+    <path d="M178 202l-9 147"/>
+    <path d="M222 202l9 147"/>
+    <path d="M138 352c40 14 84 14 124 0"/>
+  </g>
+  <g fill="#C98798">
+    <circle cx="200" cy="186" r="4"/>
+    <circle cx="184" cy="186" r="4"/>
+    <circle cx="216" cy="186" r="4"/>
+  </g>
+</svg>

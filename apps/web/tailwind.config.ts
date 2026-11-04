@@ -20,16 +20,14 @@ const config: Config = {
       colors: {
         // Identidade visual Mari Allves — Moda Modesta
         rosé: {
-          50: '#FBF0F2',
-          100: '#F4E4E8', // Rosa suave
-          200: '#E9C8D2',
-          300: '#DDAFC2',
-          400: '#C98798', // Rosé principal
-          500: '#B86E7F',
-          600: '#A35966',
-          700: '#713E4B', // Rosa escuro
-          800: '#5A313C',
-          900: '#43252D',
+          50: '#FFF9FA', // Fundo rosé quase branco
+          100: '#FDF0F3', // Rosé bem claro
+          200: '#F8E1E7',
+          300: '#F0C9D3',
+          400: '#E3A7B5',
+          500: '#D28D9E',
+          600: '#C98798', // Rosé principal
+          700: '#A85F70', // Texto e botões com contraste
         },
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',

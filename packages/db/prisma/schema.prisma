@@ -145,6 +145,7 @@ model Category {
   name        String
   slug        String     @unique
   description String?
+  imageUrl    String?
   parentId    String?
   parent      Category?  @relation("CategoryChildren", fields: [parentId], references: [id])
   children    Category[] @relation("CategoryChildren")
@@ -229,6 +230,14 @@ model ProductImage {
 
   @@index([productId])
   @@index([position])
+}
+
+model ImageAsset {
+  id        String   @id @default(cuid())
+  mimeType  String
+  size      Int
+  data      Bytes
+  createdAt DateTime @default(now())
 }
 
 model ProductMeasurement {

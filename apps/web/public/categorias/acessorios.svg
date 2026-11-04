@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" role="img" aria-label="Ilustração de bolsa">
+  <rect width="400" height="500" fill="#FFF9FA"/>
+  <circle cx="200" cy="235" r="132" fill="#FDF0F3"/>
+  <g fill="none" stroke="#A85F70" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M136 205h128l18 135c-52 16-112 16-164 0z" fill="#FDF0F3"/>
+    <path d="M160 205c0-45 80-45 80 0"/>
+    <path d="M136 235h128"/>
+    <path d="M200 235v105"/>
+    <path d="M168 235l-5 105"/>
+    <path d="M232 235l5 105"/>
+  </g>
+  <circle cx="200" cy="225" r="6" fill="#C98798"/>
+</svg>

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" role="img" aria-label="Ilustração de vestido">
+  <rect width="400" height="500" fill="#FFF9FA"/>
+  <circle cx="200" cy="235" r="132" fill="#FDF0F3"/>
+  <g fill="none" stroke="#A85F70" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M165 150l35 24 35-24 22 40-16 32-14-9-6 40 32 110c-42 20-84 20-126 0l32-110-6-40-14 9-16-32z" fill="#FDF0F3"/>
+    <path d="M200 174v48"/>
+    <path d="M184 222h32"/>
+    <path d="M160 263c26 12 54 12 80 0"/>
+    <path d="M145 363c36 16 74 16 110 0"/>
+  </g>
+  <g fill="#C98798">
+    <circle cx="200" cy="205" r="4"/>
+    <circle cx="200" cy="235" r="4"/>
+  </g>
+</svg>
