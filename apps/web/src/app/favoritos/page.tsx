@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Heart } from 'lucide-react';
 
 export default function FavoritosPage() {
   return (
@@ -11,9 +12,14 @@ export default function FavoritosPage() {
         </nav>
         <h1 className="text-3xl font-serif text-rosé-700 mb-8">Lista de favoritos</h1>
         <div className="text-center py-20 text-muted-foreground">
-          <p>Você ainda não tem produtos nos favoritos.</p>
-          <Link href="/" className="mt-4 inline-block text-rosé-700 hover:underline font-medium">
-            Começar a comprar →
+          <Heart className="h-10 w-10 mx-auto mb-4 text-rosé-300" />
+          <p className="font-medium text-foreground">Favoritos em breve</p>
+          <p className="mt-2 text-sm">
+            Estamos preparando esta funcionalidade. Enquanto isso, explore o
+            catálogo e conheça as peças.
+          </p>
+          <Link href="/catalogo" className="mt-4 inline-block text-rosé-700 hover:underline font-medium">
+            Ver catálogo →
           </Link>
         </div>
       </div>

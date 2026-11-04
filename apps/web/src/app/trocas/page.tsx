@@ -20,16 +20,16 @@ export default function TrocasPage() {
             <ul className="list-disc list-inside text-sm space-y-2 mt-2">
               <li>A peça deve estar sem uso, sem lavagem e com a etiqueta intacta.</li>
               <li>Devolva na embalagem original, quando possível.</li>
-              <li>O frete da primeira troca fica por conta da loja (para Barreiras/BA e região).</li>
+              <li>A forma de envio da devolução será combinada com a loja, observando o CDC.</li>
             </ul>
           </section>
 
           <section>
             <h2 className="text-lg font-serif text-rosé-700 mb-2">Como solicitar</h2>
             <p>
-              Entre em contato pelo e-mail <b>contato@mariallves.com.br</b> ou
-              WhatsApp (77) 9 9999-9999 informando o número do pedido e o motivo
-              da troca.
+              Entre em contato pelos canais de atendimento informados na
+              página de Contato, informando o número do pedido e o motivo da
+              troca.
             </p>
           </section>
 

@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Minus, Plus, ShoppingBag, Heart } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Minus, Plus, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/button';
 import type { Product, ProductVariant } from '@/lib/mock-data';
 
@@ -26,6 +27,7 @@ function readCart(): CartItem[] {
 }
 
 export function ProductPurchase({ product }: { product: Product }) {
+  const router = useRouter();
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
@@ -39,7 +41,7 @@ export function ProductPurchase({ product }: { product: Product }) {
   }
 
   function addToCart() {
-    if (!selectedVariant || !inStock) return;
+    if (!selectedVariant || !inStock) return false;
 
     const cart = readCart();
     const existing = cart.find(
@@ -65,6 +67,11 @@ export function ProductPurchase({ product }: { product: Product }) {
     window.dispatchEvent(new Event('ma_cart_updated'));
     setAdded(true);
     window.setTimeout(() => setAdded(false), 4000);
+    return true;
+  }
+
+  function buyNow() {
+    if (addToCart()) router.push('/checkout');
   }
 
   return (
@@ -159,14 +166,14 @@ export function ProductPurchase({ product }: { product: Product }) {
             ? 'Adicionar ao carrinho'
             : 'Esgotado'}
         </Button>
-        <Button variant="outline" asChild className="flex-1">
-          <Link
-            href={`/checkout?produto=${product.slug}&variante=${selectedVariant?.id ?? ''}&qtd=${quantity}`}
-            aria-disabled={!inStock}
-            className={!inStock ? 'pointer-events-none opacity-50' : undefined}
-          >
-            Comprar agora
-          </Link>
+        <Button
+          variant="outline"
+          className="flex-1"
+          onClick={buyNow}
+          disabled={!inStock}
+          type="button"
+        >
+          Comprar agora
         </Button>
       </div>
 
@@ -178,13 +185,6 @@ export function ProductPurchase({ product }: { product: Product }) {
           </Link>
         </p>
       )}
-
-      <button
-        type="button"
-        className="text-sm text-rosé-700 flex items-center gap-1 hover:underline"
-      >
-        <Heart className="h-4 w-4" /> Adicionar aos favoritos
-      </button>
     </div>
   );
 }

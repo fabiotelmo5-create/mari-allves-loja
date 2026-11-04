@@ -39,24 +39,28 @@ Legenda: ✅ concluído · 🟡 em andamento · ⬜ não iniciado
 | Fase | Status | O que já existe | O que falta |
 |---|---|---|---|
 | **0 — Descoberta e setup** | 🟡 80% | Monorepo, GitHub, Vercel, Supabase SP, banco criado | Domínio, dados da empresa, logo, produtos reais, conta de pagamento, e-mail |
-| **1 — Fundação** | 🟡 90% | Schema (28 tabelas) + migration aplicada, design system, layouts, **Supabase Auth (cadastro/login/logout/senha)**, RBAC admin, RLS no Profile | RLS nas demais tabelas, SMTP próprio |
-| **2 — Catálogo** | 🟡 75% | Todas as páginas, leitura do banco via Prisma, seed (6 produtos), **CRUD de produtos no admin** (criar/editar/arquivar, variações e estoque com histórico) | Busca, filtros, mais vendidos |
-| **3 — Carrinho e checkout** | 🟡 40% | Carrinho em localStorage, UI de checkout | Persistir carrinho no banco, cupons, frete por CEP, criar pedido |
-| **4 — Pagamentos** | ⬜ 0% | Interface de abstração planejada | Provedor, webhooks, reconciliação |
-| **5 — Área do cliente** | 🟡 40% | **Login/cadastro reais**, painel `/conta` com perfil, contadores e logout | Pedidos reais, rastreio, endereços, dados, favoritos |
-| **6 — Admin completo** | 🟡 40% | **Login real com RBAC**, layout do painel, dashboard, **CRUD de produtos com variações/estoque/auditoria** | Estoque, pedidos, clientes, cupons |
-| **7 — Logística** | ⬜ 0% | — | Zonas/CEPs, taxas, prazos, rastreamento |
-| **8 — Legal, LGPD, a11y** | 🟡 50% | Páginas legais escritas, a11y básica | Banner de cookies/consentimento real, revisão jurídica |
+| **1 — Fundação** | 🟡 90% | Schema + migrations, design system, layouts, **Supabase Auth (cadastro/login/logout/senha)**, RBAC admin, RLS no Profile | RLS nas demais tabelas, SMTP próprio |
+| **2 — Catálogo** | 🟡 85% | Páginas, leitura do banco via Prisma, seed (6 produtos), **CRUD de produtos no admin**, **busca `/busca`**, **filtros de categoria (tamanho, preço, ordenação)** | Produtos/fotos reais, "mais vendidos" (sem histórico de vendas), curadoria de destaques |
+| **3 — Carrinho e checkout** | ✅ 90% | Carrinho localStorage, frete por CEP, checkout guest/conta, pedido no banco com idempotência, baixa atômica de estoque, pagamento manual, rastreio público, admin de pedidos, cancelamento com devolução | Cupom, carrinho persistente no banco, pagamento real (Fase 4) |
+| **4 — Pagamentos** | ⬜ 0% | Interface de pagamento manual (`provider='manual'`, `method='a_combinar'`) | Provedor, webhooks, reconciliação |
+| **5 — Área do cliente** | 🟡 70% | Login/cadastro, `/conta`, `/meus-pedidos`, rastreio, redefinição de senha | Endereços salvos, favoritos, edição de dados |
+| **6 — Admin completo** | 🟡 70% | RBAC, dashboard, CRUD produtos/variações/estoque, pedidos (lista/detalhe/status/rastreio), auditoria | Clientes, cupons, conteúdo, usuários admin, relatórios |
+| **7 — Logística** | 🟡 40% | Zona de frete por CEP (Barreiras, R$ 12 placeholder), prazo, rastreio por shipment | Regras/taxas confirmadas, transportadoras, retirada |
+| **8 — Legal, LGPD, a11y** | 🟡 70% | Políticas corrigidas para o funcionamento real (sem CPF, sem analytics, sem promessas falsas), CDC art. 49, LGPD, a11y básica | Dados da empresa/contato, revisão jurídica, banner de cookies (desnecessário enquanto não houver cookies não essenciais) |
 | **9 — Fiscal** | ⬜ 0% | — | Fora do MVP |
-| **10 — Go-live** | ⬜ 0% | — | Testes E2E, carga, backups, monitoramento |
+| **10 — Go-live** | 🟡 15% | Produção Vercel + Supabase, E2E local | Backups/restore, monitoramento, carga, segurança, domínio |
 
 ### Ordem recomendada a partir daqui
 
 1. ~~**Auth (Fase 1)** — cadastro/login real com Supabase Auth + perfis.~~ ✅ concluído
 2. ~~**Admin de produtos (Fase 6, recorte)** — criar, editar, publicar, arquivar, variações e estoque.~~ ✅ concluído
-3. **Pedidos (Fase 3)** — checkout gravando no banco, com baixa de estoque transacional.
-4. **Pagamento (Fase 4)** — depende de conta homologada.
-5. **Logística (Fase 7)** + **Legal/LGPD (Fase 8)** antes do go-live.
+3. ~~**Pedidos (Fase 3)** — checkout gravando no banco, com baixa de estoque transacional.~~ ✅ concluído
+4. **Dados reais + fotos** — bloqueia o catálogo de produção.
+5. **Dados da empresa/contato** — bloqueia páginas legais, contato e rodapé completos.
+6. **SMTP + URLs do Supabase** — bloqueia confirmação de cadastro e recuperação de senha.
+7. **Frete real** — confirmar zona, taxa e prazo de Barreiras/BA.
+8. **Pagamento (Fase 4)** — depende de conta homologada.
+9. **Go-live** — domínio, backups, monitoramento e E2E em produção.
 
 ## 2.2 Configuração pendente no Supabase (Auth)
 
@@ -110,6 +114,30 @@ Também foi corrigido o fallback de produto sem imagem (card e página do produt
 e adicionada a validação que exige imagem principal para publicar.
 
 
+## 2.5 Fase 3 — entregue (2026-11-03)
+
+Fluxo de compra completo, ainda **sem pagamento online**:
+
+- Checkout recalcula preços e frete no servidor e ignora valores enviados pelo cliente.
+- Pedido criado em transação com baixa atômica de estoque e `StockMovement` (`SAIDA`).
+- Chave de idempotência impede pedido duplicado em reenvio.
+- Pagamento manual (`provider='manual'`, `method='a_combinar'`); pedido fica em `AGUARDANDO_PAGAMENTO`.
+- Código `MA-YYYYMMDD-XXXXXXXX`; rastreio público em `/pedido/[code]`.
+- Dados de contato do checkout são sempre gravados (visitante e conta); PII de visitante é mascarada no rastreio.
+- Admin: lista/filtros, detalhe, transições de status, rastreio, cancelamento com devolução única ao estoque e auditoria.
+- Frete por CEP via `/api/frete` e zona `Barreiras e região` (R$ 12 / 1 dia — **placeholder**).
+- Busca `/busca` e filtros de categoria (tamanho, preço e ordenação).
+- Conta: `/conta`, `/meus-pedidos` e redefinição de senha. Cards de endereços/dados/favoritos que levavam a 404 foram removidos; favoritos está marcado "em breve".
+
+**Testes executados (banco real, dados depois limpos):**
+
+- Pedido visitante completo, transições até `ENTREGUE`, rastreio `TESTE123` e pagamento aprovado.
+- Pedido com conta: dados de contato gravados, vínculo `profileId`, estoque 12→11, PII completa para o dono e mascarada para visitante.
+- Cancelamento: estoque restaurado e movimento `DEVOLUCAO` único.
+- Dados de teste removidos; catálogo de demonstração e estoque restaurados.
+
+**Limitações conhecidas:** pagamento manual (sem provedor), cupom não implementado, carrinho em `localStorage`, uma única zona de frete placeholder, sem nota fiscal, produtos/fotos de demonstração e dados da empresa/contato pendentes.
+
 ## 3. Definição de "pronto" (DoD)
 
 - Pagamento confirmado **somente** por webhook autenticado.
@@ -131,6 +159,7 @@ e adicionada a validação que exige imagem principal para publicar.
 | Escopo grande demais | Prazo estoura | MVP enxuto; congelar escopo por fase |
 | Estoque concorrente | Venda acima do estoque | Transações + `FOR UPDATE` + testes de concorrência |
 | Fornecedor de e-mail não escolhido | Confirmação de pedido não sai | Definir na Fase 0 |
+| Senha do banco exposta em conversa | Acesso não autorizado ao banco | Rotacionar no Supabase e atualizar `DATABASE_URL`/`DIRECT_URL` na Vercel |
 | LGPD/CDC descumpridos | Risco jurídico | Políticas reais; revisão com contador |
 
 ## 5. Pendências e próximos passos imediatos
@@ -144,14 +173,27 @@ e adicionada a validação que exige imagem principal para publicar.
 4. **Produtos:** me passe a lista (nome, SKU, categoria, tamanhos, cores, preços, estoque, descrição). Posso gerar o CSV de importação.
 5. **Pagamento:** quando decidir, me diga o provedor (Mercado Pago/PagBank) e se já tem conta homologada.
 6. **E-mail transacional:** quer Resend, SendGrid ou outro?
+7. **Frete:** a zona "Barreiras e região" (R$ 12 / 1 dia) é placeholder. Confirmar taxa, prazo e se haverá retirada.
+8. **Contato:** e-mail, WhatsApp e horário de atendimento oficiais.
 
-### Ações que posso executar agora (Fase 0/1)
-- [ ] Criar repositório e estrutura do monorepo (`apps/web`, `apps/admin`, `packages/db`, `packages/ui`).
-- [ ] Configurar projeto Supabase (região SP) e variáveis de ambiente.
-- [ ] Definir schema Prisma + migrations iniciais (auth, perfis, admin, produtos, variações, estoque).
-- [ ] Implementar design system com a paleta + componentes base.
-- [ ] Implementar auth cliente/admin + RBAC + primeiro admin seguro.
-- [ ] Gerar CSV de importação de produtos (modelo).
+### Ações concluídas
+- [x] Repositório e monorepo (`apps/web`, `packages/db`, `packages/ui`).
+- [x] Projeto Supabase e variáveis na Vercel.
+- [x] Schema Prisma + migrations (auth, perfis, admin, produtos, variações, estoque, pedidos, pagamentos).
+- [x] Design system com a paleta + componentes base.
+- [x] Auth cliente/admin + RBAC + criação do primeiro admin.
+- [x] CRUD de produtos/variações/estoque.
+- [x] Checkout, pedidos, rastreio e admin de pedidos.
+- [x] Revisão de conteúdo/legal para refletir o que existe.
+
+### Próximas ações (dependem de dados do cliente)
+- [ ] Substituir os 6 produtos demo e as imagens `placehold.co` por produtos/fotos reais.
+- [ ] Publicar CNPJ/CPF, endereço, e-mail, WhatsApp e horário oficiais.
+- [ ] Confirmar frete e retirada.
+- [ ] Configurar SMTP e URLs de redirecionamento no Supabase.
+- [ ] Rotacionar a senha do banco exposta e atualizar a Vercel.
+- [ ] Criar/homologar conta de pagamento (Mercado Pago/PagBank).
+- [ ] Registrar o domínio e configurar o DNS.
 
 ## 6. Métricas de sucesso (pós-lançamento)
 

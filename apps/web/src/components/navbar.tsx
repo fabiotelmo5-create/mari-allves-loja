@@ -3,14 +3,13 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { Menu, Search, ShoppingBag, User, Heart, X } from 'lucide-react';
+import { Menu, Search, ShoppingBag, User } from 'lucide-react';
 import { Button } from './button';
 import { cn } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/client';
 
 export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const pathname = usePathname();
 
@@ -36,6 +35,16 @@ export function Navbar() {
     };
   }, [pathname]);
 
+  const navLinkClass = (href: string) => {
+    const active = href === '/' ? pathname === '/' : pathname.startsWith(href);
+    return cn(
+      'px-3 py-2 transition-colors',
+      active
+        ? 'text-rosé-700 border-b-2 border-rosé-700'
+        : 'text-foreground hover:text-rosé-700'
+    );
+  };
+
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="flex h-16 items-center justify-between px-4">
@@ -49,16 +58,18 @@ export function Navbar() {
 
         <div className="flex items-center gap-3">
           {/* Busca */}
-          <div className="hidden md:flex items-center">
+          <form action="/busca" method="get" className="hidden md:flex items-center">
             <div className="relative">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <input
                 type="search"
+                name="q"
+                aria-label="Buscar produtos"
                 placeholder="Buscar produtos..."
-                className="pl-9 pr-3 h-9 rounded-lg border border-input bg-background text-sm focus:ring-1 focus:ring-rosé-700"
+                className="pl-9 pr-3 h-9 w-44 lg:w-56 rounded-lg border border-input bg-background text-sm focus:ring-1 focus:ring-rosé-700"
               />
             </div>
-          </div>
+          </form>
 
           <div className="hidden md:flex items-center gap-2">
             <Button variant="ghost" size="sm" asChild>
@@ -66,14 +77,9 @@ export function Navbar() {
                 <User className="h-4 w-4" /> {isLoggedIn ? 'Minha conta' : 'Entrar'}
               </Link>
             </Button>
-            <Button variant="ghost" size="sm" asChild>
+            <Button asChild>
               <Link href="/carrinho">
                 <ShoppingBag className="h-4 w-4" /> <span className="hidden sm:inline">Carrinho</span>
-              </Link>
-            </Button>
-            <Button asChild>
-              <Link href="/favoritos">
-                <Heart className="h-4 w-4" />
               </Link>
             </Button>
           </div>
@@ -88,7 +94,7 @@ export function Navbar() {
       {/* Mobile menu */}
       {menuOpen && (
         <div className="md:hidden border-t border-border bg-background">
-          <div className="px-4 py-3 space-y-4">
+          <div className="px-4 py-3 space-y-2">
             <Link href="/" className="block py-2 text-rosé-700 font-medium">Início</Link>
             <Link href="/categoria/saias" className="block py-2 text-foreground hover:text-rosé-700">Saias</Link>
             <Link href="/categoria/blusas" className="block py-2 text-foreground hover:text-rosé-700">Blusas</Link>
@@ -96,18 +102,18 @@ export function Navbar() {
             <Link href="/categoria/acessorios" className="block py-2 text-foreground hover:text-rosé-700">Acessórios</Link>
             <Link href="/novidades" className="block py-2 text-foreground hover:text-rosé-700">Novidades</Link>
             <Link href="/promocoes" className="block py-2 text-foreground hover:text-rosé-700">Promoções</Link>
-            <button onClick={() => setSearchOpen(!searchOpen)} className="w-full text-left py-2 text-foreground hover:text-rosé-700 flex items-center justify-between">
-              Buscar produtos <X className="h-4 w-4" />
-            </button>
-            {searchOpen && (
-              <div className="mt-2 px-2">
+            <form action="/busca" method="get" className="py-2">
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <input
                   type="search"
+                  name="q"
+                  aria-label="Buscar produtos"
                   placeholder="Buscar..."
-                  className="w-full pl-3 pr-8 h-9 rounded-lg border border-input bg-background text-sm focus:ring-1 focus:ring-rosé-700"
+                  className="w-full pl-9 pr-3 h-9 rounded-lg border border-input bg-background text-sm focus:ring-1 focus:ring-rosé-700"
                 />
               </div>
-            )}
+            </form>
             <Link href={isLoggedIn ? '/conta' : '/conta/login'} className="block py-2 text-foreground hover:text-rosé-700">
               {isLoggedIn ? 'Minha conta' : 'Entrar'}
             </Link>
@@ -118,13 +124,13 @@ export function Navbar() {
 
       {/* Desktop menu */}
       <nav className="hidden md:flex items-center space-x-1 text-sm font-medium">
-        <Link href="/" className="px-3 py-2 text-rosé-700 border-b-2 border-rosé-700">Início</Link>
-        <Link href="/categoria/saias" className="px-3 py-2 text-foreground hover:text-rosé-700 transition-colors">Saias</Link>
-        <Link href="/categoria/blusas" className="px-3 py-2 text-foreground hover:text-rosé-700 transition-colors">Blusas</Link>
-        <Link href="/categoria/vestidos" className="px-3 py-2 text-foreground hover:text-rosé-700 transition-colors">Vestidos</Link>
-        <Link href="/categoria/acessorios" className="px-3 py-2 text-foreground hover:text-rosé-700 transition-colors">Acessórios</Link>
-        <Link href="/novidades" className="px-3 py-2 text-foreground hover:text-rosé-700 transition-colors">Novidades</Link>
-        <Link href="/promocoes" className="px-3 py-2 text-foreground hover:text-rosé-700 transition-colors">Promoções</Link>
+        <Link href="/" className={navLinkClass('/')}>Início</Link>
+        <Link href="/categoria/saias" className={navLinkClass('/categoria/saias')}>Saias</Link>
+        <Link href="/categoria/blusas" className={navLinkClass('/categoria/blusas')}>Blusas</Link>
+        <Link href="/categoria/vestidos" className={navLinkClass('/categoria/vestidos')}>Vestidos</Link>
+        <Link href="/categoria/acessorios" className={navLinkClass('/categoria/acessorios')}>Acessórios</Link>
+        <Link href="/novidades" className={navLinkClass('/novidades')}>Novidades</Link>
+        <Link href="/promocoes" className={navLinkClass('/promocoes')}>Promoções</Link>
       </nav>
     </header>
   );

@@ -347,6 +347,7 @@ model CartItem {
 model Order {
   id              String      @id @default(cuid())
   code            String      @unique // ex: MA-20261023-0001
+  idempotencyKey  String?     @unique // evita pedido duplicado em reenvio
   profileId       String?
   profile         Profile?    @relation(fields: [profileId], references: [id])
   guestEmail      String?

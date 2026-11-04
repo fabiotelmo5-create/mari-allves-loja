@@ -162,6 +162,38 @@ export async function getProductsByCategory(categorySlug: string): Promise<Produ
   return rows.map(toProduct);
 }
 
+export async function searchProducts(query: string): Promise<Product[]> {
+  const term = query.trim();
+  if (!term) return [];
+
+  if (!hasDatabase) {
+    const lower = term.toLowerCase();
+    return MOCK_PRODUCTS.filter(
+      (p) =>
+        p.status === 'PUBLICADO' &&
+        (p.name.toLowerCase().includes(lower) ||
+          p.description.toLowerCase().includes(lower) ||
+          p.category.toLowerCase().includes(lower))
+    );
+  }
+
+  const rows = await prisma.product.findMany({
+    where: {
+      status: 'PUBLICADO',
+      OR: [
+        { name: { contains: term, mode: 'insensitive' } },
+        { description: { contains: term, mode: 'insensitive' } },
+        { category: { name: { contains: term, mode: 'insensitive' } } },
+        { variants: { some: { color: { contains: term, mode: 'insensitive' } } } },
+      ],
+    },
+    include: productInclude,
+    orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }],
+  });
+
+  return rows.map(toProduct);
+}
+
 export async function getFeaturedProducts(limit = 4): Promise<Product[]> {
   if (!hasDatabase) {
     return MOCK_PRODUCTS.filter((p) => p.status === 'PUBLICADO').slice(0, limit);

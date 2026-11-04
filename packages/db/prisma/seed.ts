@@ -45,6 +45,9 @@ async function main() {
         where: { productId: existing.id },
         select: { id: true },
       });
+      await prisma.stockMovement.deleteMany({
+        where: { stock: { variantId: { in: variants.map((v) => v.id) } } },
+      });
       await prisma.stock.deleteMany({
         where: { variantId: { in: variants.map((v) => v.id) } },
       });
@@ -114,6 +117,26 @@ async function main() {
     console.log(
       `✓ ${product.name} (${product.variants.length} variações, ${product.images.length} imagens)`
     );
+  }
+
+  const existingZone = await prisma.shippingZone.findFirst({
+    where: { name: 'Barreiras e região' },
+    select: { id: true },
+  });
+
+  if (!existingZone) {
+    await prisma.shippingZone.create({
+      data: {
+        name: 'Barreiras e região',
+        // Faixa inicial de CEPs de Barreiras/BA. Ajuste no banco quando a
+        // loja definir as regras reais de entrega.
+        zipRanges: ['47800-000', '47899-999'],
+        priceCents: 1200,
+        shippingDays: 1,
+        active: true,
+      },
+    });
+    console.log('✓ zona de frete Barreiras e região');
   }
 
   const [products, variants, stock] = await Promise.all([

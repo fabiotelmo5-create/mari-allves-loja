@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { ShoppingBag, Trash2, ChevronLeft, ChevronRight, Truck } from 'lucide-react';
 import { Button } from '@/components/button';
 import { formatPrice } from '@/lib/utils';
@@ -33,6 +34,7 @@ function saveCart(items: CartItem[]) {
 }
 
 export default function CartPage() {
+  const router = useRouter();
   const [cart, setCart] = React.useState<CartItem[]>([]);
   const [products, setProducts] = React.useState<Record<string, Product>>({});
   const [loading, setLoading] = React.useState(true);
@@ -79,10 +81,15 @@ export default function CartPage() {
   }, []);
 
   function updateQuantity(variantId: string, nextQuantity: number) {
-    const next = cart.map((item) =>
-      item.variantId === variantId
-        ? { ...item, quantity: Math.max(1, nextQuantity) }
-        : item
+    const item = cart.find((row) => row.variantId === variantId);
+    const variant = item
+      ? products[item.productSlug]?.variants.find((v) => v.id === variantId)
+      : undefined;
+    const max = Math.max(1, variant?.stockQuantity ?? 1);
+    const safeQuantity = Math.min(max, Math.max(1, nextQuantity));
+
+    const next = cart.map((row) =>
+      row.variantId === variantId ? { ...row, quantity: safeQuantity } : row
     );
     setCart(next);
     saveCart(next);
@@ -100,13 +107,18 @@ export default function CartPage() {
     return acc + (variant?.priceCents ?? product?.priceCents ?? 0) * item.quantity;
   }, 0);
 
-  const shipping = subtotal > 0 ? 1200 : 0;
-  const total = subtotal + shipping;
+  const hasIssues = cart.some((item) => {
+    const product = products[item.productSlug];
+    const variant = product?.variants.find((v) => v.id === item.variantId);
+    return !product || !variant || !variant.active || variant.stockQuantity < item.quantity;
+  });
 
   const cartItems = cart.map((item) => {
     const product = products[item.productSlug];
     const variant = product?.variants.find((v) => v.id === item.variantId);
     const price = variant?.priceCents ?? product?.priceCents ?? 0;
+    const maxStock = variant?.stockQuantity ?? 0;
+    const unavailable = !product || !variant || !variant.active || maxStock < 1;
 
     return (
       <div key={item.variantId} className="flex gap-4 items-center border-b border-border pb-4">
@@ -131,6 +143,11 @@ export default function CartPage() {
           <p className="text-xs text-muted-foreground mt-1">
             SKU: {variant?.sku ?? product?.sku ?? '—'}
           </p>
+          {unavailable && (
+            <p className="text-xs text-red-600 mt-1">
+              Indisponível no momento — remova para continuar.
+            </p>
+          )}
         </div>
         <div className="flex items-end gap-2">
           <span className="font-medium">{formatPrice(price)}</span>
@@ -148,8 +165,9 @@ export default function CartPage() {
             <button
               type="button"
               onClick={() => updateQuantity(item.variantId, item.quantity + 1)}
+              disabled={unavailable || item.quantity >= maxStock}
               aria-label="Aumentar quantidade"
-              className="px-3 py-1 text-sm hover:bg-rosé-50"
+              className="px-3 py-1 text-sm hover:bg-rosé-50 disabled:opacity-40"
             >
               <ChevronRight className="h-4 w-4" />
             </button>
@@ -198,19 +216,6 @@ export default function CartPage() {
               <>{cartItems}</>
             )}
 
-            <div className="mt-8 border border-border rounded-xl p-6 bg-white">
-              <h3 className="text-sm font-semibold text-rosé-700 mb-4">
-                Cupom de desconto
-              </h3>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Digite o cupom"
-                  className="flex-1 border border-input rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-rosé-700"
-                />
-                <Button variant="outline" size="sm">Aplicar</Button>
-              </div>
-            </div>
           </section>
 
           <aside className="lg:col-span-1 space-y-4">
@@ -226,20 +231,25 @@ export default function CartPage() {
                   <span>{formatPrice(subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">Frete (motoboy)</span>
-                  <span className="text-muted-foreground">{formatPrice(shipping)}</span>
+                  <span className="text-muted-foreground">Frete</span>
+                  <span className="text-muted-foreground">Calculado no checkout</span>
                 </div>
                 <div className="flex justify-between pt-2 border-t border-border">
-                  <span className="font-bold">Total</span>
-                  <span className="font-bold text-rosé-700">{formatPrice(total)}</span>
+                  <span className="font-bold">Total dos itens</span>
+                  <span className="font-bold text-rosé-700">{formatPrice(subtotal)}</span>
                 </div>
               </div>
+              {hasIssues && (
+                <p className="mt-4 text-xs text-red-600">
+                  Ajuste os itens indisponíveis para finalizar a compra.
+                </p>
+              )}
               <Button
-                disabled={cart.length === 0}
+                disabled={cart.length === 0 || hasIssues || loading}
                 className="w-full mt-6"
-                asChild
+                onClick={() => router.push('/checkout')}
               >
-                <Link href="/checkout">Finalizar compra</Link>
+                Finalizar compra
               </Button>
             </div>
 

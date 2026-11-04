@@ -93,6 +93,12 @@ export default async function AdminDashboardPage() {
         <div className="rounded-xl border border-border bg-white p-4">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold text-foreground">Últimos pedidos</h2>
+            <Link
+              href="/admin/pedidos"
+              className="text-xs font-medium text-rosé-700 hover:underline"
+            >
+              Ver todos
+            </Link>
           </div>
 
           {recentOrders.length === 0 ? (
@@ -102,20 +108,25 @@ export default async function AdminDashboardPage() {
           ) : (
             <ul className="divide-y divide-border">
               {recentOrders.map((order) => (
-                <li key={order.id} className="flex items-center justify-between gap-3 py-2.5">
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-foreground">{order.code}</p>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {order.profile?.fullName ?? order.guestName ?? 'Visitante'} ·{' '}
-                      {new Date(order.createdAt).toLocaleDateString('pt-BR')}
-                    </p>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <p className="text-sm font-medium">{formatPrice(order.totalCents)}</p>
-                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
-                      {order.status.replaceAll('_', ' ').toLowerCase()}
-                    </p>
-                  </div>
+                <li key={order.id}>
+                  <Link
+                    href={`/admin/pedidos/${order.id}`}
+                    className="flex items-center justify-between gap-3 py-2.5 hover:text-rosé-700"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-foreground">{order.code}</p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {order.guestName ?? order.profile?.fullName ?? 'Visitante'} ·{' '}
+                        {new Date(order.createdAt).toLocaleDateString('pt-BR')}
+                      </p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="text-sm font-medium">{formatPrice(order.totalCents)}</p>
+                      <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                        {order.status.replaceAll('_', ' ').toLowerCase()}
+                      </p>
+                    </div>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -142,6 +153,16 @@ export default async function AdminDashboardPage() {
             </Link>
             <p className="text-[11px] text-muted-foreground">
               Cadastre produtos, variações e estoque inicial.
+            </p>
+            <Link
+              href="/admin/pedidos"
+              className="flex items-center justify-between rounded-lg bg-rosé-50 px-3 py-2 text-xs font-medium text-rosé-700 hover:bg-rosé-100"
+            >
+              Gerenciar pedidos
+              <span aria-hidden>→</span>
+            </Link>
+            <p className="text-[11px] text-muted-foreground">
+              Acompanhe pagamentos, separe e envie pedidos.
             </p>
           </div>
         </div>

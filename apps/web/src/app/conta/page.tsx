@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Package, Heart, MapPin, LogOut, User, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { Package, Heart, LogOut, ChevronRight, CheckCircle2 } from 'lucide-react';
 import { prisma } from '@mari-allves/db';
 import { requireUser, getCurrentProfile } from '@/lib/auth';
 import { Button } from '@/components/button';
@@ -16,13 +16,9 @@ export default async function ContaPage({
   const user = await requireUser('/conta');
   const profile = await getCurrentProfile();
 
-  const [ordersCount, favoritesCount, addressesCount] = profile
-    ? await Promise.all([
-        prisma.order.count({ where: { profileId: profile.id } }),
-        prisma.wishlist.count({ where: { profileId: profile.id } }),
-        prisma.address.count({ where: { profileId: profile.id } }),
-      ])
-    : [0, 0, 0];
+  const ordersCount = profile
+    ? await prisma.order.count({ where: { profileId: profile.id } })
+    : 0;
 
   const firstName = (profile?.fullName ?? user.email ?? '').split(' ')[0];
 
@@ -40,25 +36,7 @@ export default async function ContaPage({
       href: '/favoritos',
       icon: Heart,
       title: 'Favoritos',
-      description:
-        favoritesCount === 0
-          ? 'Nenhum item salvo'
-          : `${favoritesCount} ${favoritesCount === 1 ? 'item salvo' : 'itens salvos'}`,
-    },
-    {
-      href: '/conta/enderecos',
-      icon: MapPin,
-      title: 'Endereços',
-      description:
-        addressesCount === 0
-          ? 'Nenhum endereço cadastrado'
-          : `${addressesCount} ${addressesCount === 1 ? 'endereço' : 'endereços'}`,
-    },
-    {
-      href: '/conta/dados',
-      icon: User,
-      title: 'Meus dados',
-      description: 'Nome, e-mail, telefone e senha',
+      description: 'Em breve',
     },
   ];
 
@@ -77,6 +55,12 @@ export default async function ContaPage({
             <p className="text-xs uppercase tracking-wide text-muted-foreground mb-1">Minha conta</p>
             <h1 className="text-2xl font-serif text-rosé-700">Olá, {firstName}</h1>
             <p className="text-sm text-muted-foreground mt-1">{user.email}</p>
+            <Link
+              href="/conta/esqueceu-senha"
+              className="mt-1 inline-block text-xs text-rosé-700 hover:underline"
+            >
+              Alterar senha
+            </Link>
           </div>
           <form action={signOutAction}>
             <Button type="submit" variant="outline" size="sm">

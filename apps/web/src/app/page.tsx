@@ -3,14 +3,13 @@ import Image from 'next/image';
 import { Star, Truck, Tag, ShieldCheck } from 'lucide-react';
 import { ProductCard } from '@/components/product-card';
 import { Button } from '@/components/button';
-import { getFeaturedProducts, getNewArrivals, getPromotions, listCategories } from '@/lib/catalog';
+import { getNewArrivals, getPromotions, listCategories } from '@/lib/catalog';
 
 // Revalida o catálogo a cada 60s (estoque/preços mudam pelo admin)
 export const revalidate = 60;
 
 export default async function Home() {
-  const [featured, newArrivals, promotions, categories] = await Promise.all([
-    getFeaturedProducts(),
+  const [newArrivals, promotions, categories] = await Promise.all([
     getNewArrivals(),
     getPromotions(),
     listCategories(),
@@ -104,23 +103,6 @@ export default async function Home() {
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
             {newArrivals.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Produtos em destaque */}
-      <section className="py-12">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-serif text-rosé-700">Produtos em destaque</h2>
-            <Link href="/catalogo" className="text-sm text-rosé-700 hover:underline">
-              Ver todos →
-            </Link>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-            {featured.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
           </div>

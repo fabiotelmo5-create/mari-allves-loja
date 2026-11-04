@@ -26,7 +26,7 @@ export default async function LoginPage({
           </Link>
           <h1 className="text-2xl font-serif text-rosé-700">Entrar</h1>
           <p className="text-muted-foreground">
-            Acesse sua conta para acompanhar pedidos e endereços.
+            Acesse sua conta para acompanhar seus pedidos.
           </p>
         </div>
 
@@ -35,7 +35,7 @@ export default async function LoginPage({
         <div className="mt-8 border-t border-border pt-6 text-center">
           <p className="text-xs text-muted-foreground mb-4">Ou continue como visitante</p>
           <Button variant="outline" asChild className="w-full">
-            <Link href="/carrinho">Comprar sem cadastro</Link>
+            <Link href="/catalogo">Comprar sem cadastro</Link>
           </Button>
         </div>
       </div>

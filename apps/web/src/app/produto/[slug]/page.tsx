@@ -1,8 +1,8 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
 import { getProductBySlug } from '@/lib/catalog';
 import { formatPrice } from '@/lib/utils';
+import { ProductGallery } from '@/components/product-gallery';
 import { ProductPurchase } from '@/components/product-purchase';
 
 export default async function ProductPage({
@@ -39,34 +39,7 @@ export default async function ProductPage({
 
         <div className="lg:grid lg:grid-cols-2 lg:gap-12">
           {/* Galeria de imagens */}
-          <div className="space-y-4">
-            <div className="aspect-square bg-rosé-50 border border-border rounded-xl relative overflow-hidden">
-              {product.images[0] ? (
-                <Image
-                  src={product.images[0].url}
-                  alt={product.images[0].alt}
-                  fill
-                  className="object-cover object-center"
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  priority
-                />
-              ) : (
-                <div className="flex h-full items-center justify-center text-sm uppercase tracking-[0.2em] text-rosé-400">
-                  Mari Allves
-                </div>
-              )}
-            </div>
-            <div className="grid grid-cols-4 gap-2">
-              {product.images.slice(0, 4).map((img) => (
-                <img
-                  key={img.position}
-                  src={img.url}
-                  alt={img.alt}
-                  className="aspect-square object-cover rounded-lg border border-transparent hover:border-rosé-300 cursor-pointer transition-colors"
-                />
-              ))}
-            </div>
-          </div>
+          <ProductGallery images={product.images} name={product.name} />
 
           {/* Informações do produto */}
           <div className="space-y-6">

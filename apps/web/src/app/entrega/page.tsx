@@ -16,24 +16,24 @@ export default function EntregaPage() {
           <section>
             <h2 className="text-lg font-serif text-rosé-700 mb-2">Modalidades</h2>
             <ul className="list-disc list-inside text-sm space-y-2 mt-2">
-              <li>Entrega por motoboy na região.</li>
-              <li>Retirada na loja (quando disponível).</li>
+              <li>Entrega na região de Barreiras/BA, conforme a opção calculada no checkout.</li>
+              <li>A retirada não está disponível no momento.</li>
             </ul>
           </section>
 
           <section>
             <h2 className="text-lg font-serif text-rosé-700 mb-2">Prazo</h2>
             <p>
-              O prazo total = preparação + transporte. Você confere o valor do
-              frete e o prazo estimado antes de pagar.
+              O prazo estimado é exibido no checkout após o cálculo do frete.
+              Ele pode variar conforme a região e a disponibilidade dos itens.
             </p>
           </section>
 
           <section>
             <h2 className="text-lg font-serif text-rosé-700 mb-2">Frete grátis</h2>
             <p>
-              Condições de frete grátis são definidas pela administração e
-              exibidas no carrinho/checkout quando aplicáveis.
+              No momento, não há promoção de frete grátis. Se uma condição for
+              configurada, ela aparecerá no checkout.
             </p>
           </section>
         </div>

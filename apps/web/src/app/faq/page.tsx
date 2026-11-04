@@ -7,7 +7,7 @@ const FAQS = [
   },
   {
     q: 'Qual o prazo de entrega?',
-    a: 'O prazo é calculado no checkout com base no seu CEP, considerando o tempo de preparação e transporte. Você confere o valor do frete e o prazo antes de finalizar a compra.',
+    a: 'O prazo estimado é exibido no checkout após o cálculo do frete. Ele pode variar conforme a região e a disponibilidade dos itens.',
   },
   {
     q: 'Posso trocar ou devolver um produto?',
@@ -15,15 +15,15 @@ const FAQS = [
   },
   {
     q: 'Como faço para calcular o frete?',
-    a: 'Na página do produto, informe seu CEP no campo "Calcular frete". No checkout, você confere as modalidades de entrega disponíveis para sua região.',
+    a: 'No checkout, informe seu CEP para calcular o frete e o prazo. O valor é confirmado antes de finalizar a compra.',
   },
   {
     q: 'Vocês têm loja física?',
-    a: 'Por enquanto somos uma loja virtual focada em Barreiras/BA e região. A retirada pode ser oferecida conforme configuração da administração.',
+    a: 'Por enquanto somos uma loja virtual focada em Barreiras/BA e região. A retirada não está disponível no checkout; a entrega é combinada com a loja.',
   },
   {
     q: 'As fotos dos produtos são reais?',
-    a: 'Sim. Todas as imagens representam fielmente as peças vendidas. Não usamos imagens ilustrativas como se fossem fotos do produto sem deixar isso claro.',
+    a: 'As fotos são cadastradas pela loja a partir das peças reais. Quando um produto ainda não tem foto real, exibimos uma imagem provisória identificada, sem simular a peça.',
   },
 ];
 
