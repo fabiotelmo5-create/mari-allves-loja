@@ -25,6 +25,9 @@ function translateAuthError(message: string): string {
 }
 
 async function getOrigin() {
+  const configuredUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '');
+  if (configuredUrl) return configuredUrl;
+
   const headersList = await headers();
   const host = headersList.get('host') ?? 'localhost:3000';
   const protocol = headersList.get('x-forwarded-proto') ?? 'http';
