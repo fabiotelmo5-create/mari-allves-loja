@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Package, Heart, LogOut, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { Package, Heart, LogOut, ChevronRight, CheckCircle2, ShieldCheck } from 'lucide-react';
 import { prisma } from '@mari-allves/db';
 import { requireUser, getCurrentProfile } from '@/lib/auth';
 import { Button } from '@/components/button';
@@ -64,8 +64,9 @@ export default async function ContaPage({
             </Link>
           </div>
           <form action={signOutAction}>
-            <Button type="submit" variant="outline" size="sm">
-              <LogOut className="h-4 w-4" /> Sair
+            <Button type="submit" variant="outline" size="sm" className="gap-2">
+              <span>Sair</span>
+              <LogOut className="h-4 w-4 shrink-0" />
             </Button>
           </form>
         </div>
@@ -96,6 +97,27 @@ export default async function ContaPage({
             Aparência
           </p>
           <ThemeToggle />
+        </div>
+
+        <div className="mt-8 space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            Administração
+          </p>
+          <Link
+            href="/admin/login"
+            className="group flex items-center gap-4 rounded-xl border border-border bg-white p-4 transition-colors hover:border-rosé-300 hover:bg-rosé-50/50"
+          >
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-rosé-50 text-rosé-700">
+              <ShieldCheck className="h-5 w-5" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-medium text-foreground">Entrar no painel administrativo</span>
+              <span className="block text-xs text-muted-foreground">
+                Acesso protegido por e-mail e senha de administrador.
+              </span>
+            </span>
+            <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-rosé-700" />
+          </Link>
         </div>
 
         <div className="mt-8">
