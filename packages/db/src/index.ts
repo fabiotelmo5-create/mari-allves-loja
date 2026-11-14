@@ -1,4 +1,10 @@
-export { PrismaClient, Prisma, ProductStatus } from '@prisma/client';
+export {
+  PrismaClient,
+  Prisma,
+  OrderStatus,
+  PaymentStatus,
+  ProductStatus,
+} from '@prisma/client';
 
 import { PrismaClient } from '@prisma/client';
 

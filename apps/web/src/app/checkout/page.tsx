@@ -1,12 +1,15 @@
 import Link from 'next/link';
 import { getCurrentProfile } from '@/lib/auth';
+import { getPaymentConfig } from '@/lib/payments/config';
 import { CheckoutForm } from './checkout-form';
 
 export const metadata = { title: 'Finalizar compra — Mari Allves' };
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 
 export default async function CheckoutPage() {
   const profile = await getCurrentProfile();
+  const paymentMode = getPaymentConfig().mode;
 
   return (
     <main className="flex-1">
@@ -31,6 +34,7 @@ export default async function CheckoutPage() {
         </div>
 
         <CheckoutForm
+          paymentMode={paymentMode}
           profile={
             profile
               ? {

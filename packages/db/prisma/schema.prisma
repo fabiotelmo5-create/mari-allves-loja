@@ -431,18 +431,20 @@ model OrderStatusHistory {
 // ---------------------------------------------------------------------------
 
 model Payment {
-  id             String        @id @default(cuid())
-  orderId        String
-  order          Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  provider       String // mercado_pago | pagbank | manual
-  providerTxId   String        @unique // identificador único da transação no provedor
-  idempotencyKey String        @unique // evita cobrança duplicada
-  method         String? // pix | credit_card | debit_card | boleto
-  status         PaymentStatus @default(PENDENTE)
-  amountCents    Int
-  raw            Json? // resposta bruta do provedor (sem dados do cartão)
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  id                   String        @id @default(cuid())
+  orderId              String
+  order                Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  provider             String // mercado_pago | pagbank | manual
+  providerTxId         String        @unique // identificador único da transação no provedor
+  providerPreferenceId String?       @unique // preferência do Checkout Pro
+  checkoutUrl          String? // URL segura do Checkout Pro
+  idempotencyKey       String        @unique // evita cobrança duplicada
+  method               String? // pix | credit_card | debit_card | boleto
+  status               PaymentStatus @default(PENDENTE)
+  amountCents          Int
+  raw                  Json? // resposta resumida do provedor (sem dados do cartão)
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
 
   events PaymentEvent[]
 
@@ -453,12 +455,13 @@ model Payment {
 }
 
 model PaymentEvent {
-  id         String   @id @default(cuid())
-  paymentId  String
-  payment    Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
-  eventType  String // payment.approved | payment.rejected | ...
-  payload    Json?
-  receivedAt DateTime @default(now())
+  id              String   @id @default(cuid())
+  paymentId       String
+  payment         Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  providerEventId String?  @unique // idempotência de notificações do provedor
+  eventType       String // payment.approved | payment.rejected | ...
+  payload         Json?
+  receivedAt      DateTime @default(now())
 
   @@index([paymentId])
   @@index([eventType])

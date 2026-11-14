@@ -3,13 +3,16 @@ import { notFound } from 'next/navigation';
 import {
   CheckCircle2,
   Clock,
+  ExternalLink,
   MapPin,
   Package,
   Truck,
   XCircle,
 } from 'lucide-react';
 import { prisma } from '@mari-allves/db';
+import { Button } from '@/components/button';
 import { getCurrentProfile } from '@/lib/auth';
+import { paymentMethodLabel, paymentProviderLabel } from '@/lib/payment-labels';
 import { formatPrice } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
@@ -95,8 +98,15 @@ function maskPhone(phone: string | null | undefined) {
   return `(**) *****-${digits.slice(-4)}`;
 }
 
-export default async function OrderPage({ params }: { params: Promise<{ code: string }> }) {
+export default async function OrderPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ code: string }>;
+  searchParams: Promise<{ pagamento?: string }>;
+}) {
   const { code } = await params;
+  const { pagamento } = await searchParams;
 
   const order = await prisma.order.findUnique({
     where: { code },
@@ -118,32 +128,76 @@ export default async function OrderPage({ params }: { params: Promise<{ code: st
   const StatusIcon = status.icon;
   const payment = order.payments[0];
   const paymentStatus = payment?.status ?? 'PENDENTE';
+  const isOnlinePayment = payment?.provider === 'mercado_pago';
+  const safeCheckoutUrl =
+    payment?.checkoutUrl?.startsWith('https://') ? payment.checkoutUrl : null;
+  const retryPaymentUrl =
+    isOnlinePayment &&
+    safeCheckoutUrl &&
+    (paymentStatus === 'PENDENTE' || paymentStatus === 'RECUSADO')
+      ? safeCheckoutUrl
+      : null;
 
-  const paymentTitle =
-    paymentStatus === 'APROVADO'
-      ? 'Pagamento confirmado.'
-      : paymentStatus === 'CANCELADO'
-        ? 'Pagamento cancelado.'
-        : paymentStatus === 'REEMBOLSADO'
-          ? 'Pagamento reembolsado.'
-          : paymentStatus === 'RECUSADO'
-            ? 'Pagamento recusado.'
-            : paymentStatus === 'EXPIRADO'
-              ? 'Pagamento expirado.'
-              : 'Pagamento a combinar com a loja.';
+  let paymentTitle: string;
+  let paymentDetail: string;
 
-  const paymentDetail =
-    paymentStatus === 'APROVADO' && payment
-      ? `Confirmado em ${formatDate(payment.updatedAt)}.`
-      : paymentStatus === 'CANCELADO'
-        ? 'Este pedido foi cancelado.'
-        : paymentStatus === 'REEMBOLSADO'
-          ? 'O valor foi devolvido conforme combinado com a loja.'
-          : paymentStatus === 'RECUSADO'
-            ? 'A loja entrará em contato para orientar uma nova tentativa.'
-            : paymentStatus === 'EXPIRADO'
-              ? 'A loja entrará em contato para combinar uma nova forma de pagamento.'
-              : 'A loja entra em contato pelo e-mail ou telefone informado para combinar a forma de pagamento.';
+  if (isOnlinePayment) {
+    switch (paymentStatus) {
+      case 'APROVADO':
+        paymentTitle = 'Pagamento confirmado.';
+        paymentDetail = payment
+          ? `Confirmado pelo Mercado Pago em ${formatDate(payment.updatedAt)}.`
+          : 'Pagamento confirmado pelo Mercado Pago.';
+        break;
+      case 'RECUSADO':
+        paymentTitle = 'Pagamento não aprovado.';
+        paymentDetail =
+          'Você pode tentar novamente pelo botão abaixo ou escolher outra forma de pagamento no Mercado Pago.';
+        break;
+      case 'EXPIRADO':
+        paymentTitle = 'Link de pagamento expirado.';
+        paymentDetail = 'Fale com a loja para gerar um novo link de pagamento.';
+        break;
+      case 'CANCELADO':
+        paymentTitle = 'Pagamento cancelado.';
+        paymentDetail = 'Este pedido foi cancelado ou o pagamento foi cancelado pelo Mercado Pago.';
+        break;
+      case 'REEMBOLSADO':
+        paymentTitle = 'Pagamento reembolsado.';
+        paymentDetail = 'O estorno foi processado pelo Mercado Pago.';
+        break;
+      default:
+        paymentTitle = 'Aguardando confirmação do Mercado Pago.';
+        paymentDetail =
+          'Se você já pagou, a confirmação pode levar alguns instantes. Atualize esta página.';
+    }
+  } else {
+    paymentTitle =
+      paymentStatus === 'APROVADO'
+        ? 'Pagamento confirmado.'
+        : paymentStatus === 'CANCELADO'
+          ? 'Pagamento cancelado.'
+          : paymentStatus === 'REEMBOLSADO'
+            ? 'Pagamento reembolsado.'
+            : paymentStatus === 'RECUSADO'
+              ? 'Pagamento recusado.'
+              : paymentStatus === 'EXPIRADO'
+                ? 'Pagamento expirado.'
+                : 'Pagamento a combinar com a loja.';
+
+    paymentDetail =
+      paymentStatus === 'APROVADO' && payment
+        ? `Confirmado em ${formatDate(payment.updatedAt)}.`
+        : paymentStatus === 'CANCELADO'
+          ? 'Este pedido foi cancelado.'
+          : paymentStatus === 'REEMBOLSADO'
+            ? 'O valor foi devolvido conforme combinado com a loja.'
+            : paymentStatus === 'RECUSADO'
+              ? 'A loja entrará em contato para orientar uma nova tentativa.'
+              : paymentStatus === 'EXPIRADO'
+                ? 'A loja entrará em contato para combinar uma nova forma de pagamento.'
+                : 'A loja entra em contato pelo e-mail ou telefone informado para combinar a forma de pagamento.';
+  }
 
   const displayName = order.guestName ?? order.profile?.fullName ?? address.recipient;
   const displayEmail = order.guestEmail ?? order.profile?.email ?? address.email;
@@ -178,6 +232,24 @@ export default async function OrderPage({ params }: { params: Promise<{ code: st
             {status.label}
           </span>
         </div>
+
+        {pagamento === 'sucesso' && paymentStatus !== 'APROVADO' && (
+          <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+            Recebemos o retorno do Mercado Pago. Estamos aguardando a confirmação automática do
+            pagamento. Atualize esta página em alguns instantes.
+          </div>
+        )}
+        {pagamento === 'falha' && paymentStatus !== 'APROVADO' && (
+          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+            O pagamento não foi concluído. Se ainda quiser finalizar a compra, use o botão de
+            pagamento abaixo ou fale com a loja.
+          </div>
+        )}
+        {pagamento === 'pendente' && paymentStatus === 'PENDENTE' && (
+          <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+            O Mercado Pago está processando o pagamento. A confirmação pode levar alguns instantes.
+          </div>
+        )}
 
         <div className="space-y-6">
           <section className="rounded-xl border border-border bg-white p-6">
@@ -267,6 +339,28 @@ export default async function OrderPage({ params }: { params: Promise<{ code: st
             <h2 className="mb-4 text-sm font-semibold text-rosé-700">Pagamento</h2>
             <p className="text-sm">{paymentTitle}</p>
             <p className="mt-1 text-xs text-muted-foreground">{paymentDetail}</p>
+            {payment && (
+              <p className="mt-3 text-xs text-muted-foreground">
+                {paymentProviderLabel(payment.provider)}
+                {payment.method ? ` · ${paymentMethodLabel(payment.method)}` : ''}
+              </p>
+            )}
+            {retryPaymentUrl && (
+              <Button asChild className="mt-4">
+                <a href={retryPaymentUrl} target="_blank" rel="noopener noreferrer">
+                  {paymentStatus === 'RECUSADO'
+                    ? 'Tentar pagar novamente'
+                    : 'Pagar com Mercado Pago'}
+                  <ExternalLink className="ml-2 h-4 w-4" />
+                </a>
+              </Button>
+            )}
+            {isOnlinePayment && (
+              <p className="mt-3 text-xs text-muted-foreground">
+                A confirmação é feita pelo Mercado Pago. Esta página não libera o pedido
+                manualmente.
+              </p>
+            )}
           </section>
 
           <section className="rounded-xl border border-border bg-white p-6">

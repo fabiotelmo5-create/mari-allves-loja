@@ -8,8 +8,12 @@ import {
   isOrderStatus,
   ORDER_STATUS_LABELS,
 } from '@/lib/order-status';
+import { applyMercadoPagoPayment } from '@/lib/payments/apply';
+import { getPaymentConfig } from '@/lib/payments/config';
+import { searchMercadoPagoPayments } from '@/lib/payments/mercado-pago';
 
 export type OrderActionState = { error?: string; success?: boolean } | null;
+export type SyncPaymentState = { error?: string; success?: string } | null;
 
 function revalidateOrder(orderId: string, code: string) {
   revalidatePath('/admin/pedidos');
@@ -34,7 +38,11 @@ export async function updateOrderStatusAction(
 
   const order = await prisma.order.findUnique({
     where: { id: orderId },
-    include: { items: true, shipment: true },
+    include: {
+      items: true,
+      shipment: true,
+      payments: { select: { provider: true, status: true } },
+    },
   });
 
   if (!order) return { error: 'Pedido não encontrado.' };
@@ -42,6 +50,37 @@ export async function updateOrderStatusAction(
   if (!canTransition(order.status, nextStatus)) {
     return {
       error: `Não é possível passar de "${ORDER_STATUS_LABELS[order.status]}" para "${ORDER_STATUS_LABELS[nextStatus]}".`,
+    };
+  }
+
+  const onlinePayment = order.payments.find((payment) => payment.provider !== 'manual');
+
+  if (
+    nextStatus === 'PAGAMENTO_CONFIRMADO' &&
+    onlinePayment &&
+    onlinePayment.status !== 'APROVADO'
+  ) {
+    return {
+      error:
+        'Este pedido tem pagamento online. A confirmação só pode ser feita pelo webhook do Mercado Pago.',
+    };
+  }
+
+  if (
+    nextStatus === 'REEMBOLSADO' &&
+    onlinePayment &&
+    onlinePayment.status !== 'REEMBOLSADO'
+  ) {
+    return {
+      error:
+        'Para reembolsar um pagamento online, faça o estorno no painel do Mercado Pago. O status será atualizado automaticamente.',
+    };
+  }
+
+  if (nextStatus === 'CANCELADO' && onlinePayment?.status === 'APROVADO') {
+    return {
+      error:
+        'Este pedido já foi pago online. Faça o estorno no Mercado Pago antes de cancelar; o webhook atualizará o status.',
     };
   }
 
@@ -190,4 +229,84 @@ export async function saveShipmentAction(
 
   revalidateOrder(orderId, order.code);
   return { success: true };
+}
+
+/**
+ * Reconciliação manual: consulta o Mercado Pago e aplica o status mais recente.
+ * Serve para recuperar um pedido cujo webhook falhou. A ação não inventa
+ * pagamento: se o provedor não tiver registro, retorna uma mensagem honesta.
+ */
+export async function syncMercadoPagoPaymentAction(
+  _previousState: SyncPaymentState,
+  formData: FormData
+): Promise<SyncPaymentState> {
+  await requireAdmin();
+
+  const orderId = String(formData.get('orderId') ?? '').trim();
+  if (!orderId) return { error: 'Pedido não encontrado.' };
+
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    select: {
+      id: true,
+      code: true,
+      payments: {
+        where: { provider: 'mercado_pago' },
+        orderBy: { createdAt: 'desc' },
+        take: 1,
+        select: { id: true },
+      },
+    },
+  });
+
+  if (!order) return { error: 'Pedido não encontrado.' };
+  if (order.payments.length === 0) {
+    return { error: 'Este pedido não tem pagamento online registrado.' };
+  }
+
+  const config = getPaymentConfig();
+  const accessToken = config.mercadoPago.accessToken;
+
+  if (config.mode !== 'mercado_pago' || !accessToken) {
+    return {
+      error: 'O Mercado Pago não está configurado neste ambiente.',
+    };
+  }
+
+  try {
+    const payments = await searchMercadoPagoPayments(order.code, accessToken);
+
+    if (payments.length === 0) {
+      return {
+        error:
+          'O Mercado Pago ainda não registrou um pagamento para este pedido. Se o cliente pagou agora, tente novamente em instantes.',
+      };
+    }
+
+    const latest = [...payments].sort((a, b) => {
+      const dateA = new Date(a.dateLastUpdated ?? a.dateApproved ?? 0).getTime();
+      const dateB = new Date(b.dateLastUpdated ?? b.dateApproved ?? 0).getTime();
+      return dateB - dateA;
+    })[0];
+
+    const result = await applyMercadoPagoPayment({
+      payment: latest,
+      eventId: `mp-sync:${latest.id}:${latest.status}:${latest.dateLastUpdated ?? ''}`,
+      source: 'sync',
+    });
+
+    if (!result.ok) return { error: result.message };
+
+    revalidateOrder(order.id, order.code);
+    return {
+      success: result.duplicate
+        ? 'Pagamento já estava sincronizado.'
+        : `Pagamento sincronizado. Status: ${result.paymentStatus}.`,
+    };
+  } catch (error) {
+    console.error('syncMercadoPagoPaymentAction failed', error);
+    return {
+      error: 'Não foi possível consultar o Mercado Pago agora. Tente novamente em instantes.',
+    };
+  }
 }

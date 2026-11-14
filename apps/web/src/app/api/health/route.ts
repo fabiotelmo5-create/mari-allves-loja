@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@mari-allves/db';
+import { getPaymentConfig } from '@/lib/payments/config';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,6 +10,7 @@ export const dynamic = 'force-dynamic';
  * (nunca expõe os valores) e se o banco responde.
  */
 export async function GET() {
+  const payment = getPaymentConfig();
   let database: 'ok' | 'error' | 'not_configured' = 'not_configured';
 
   if (process.env.DATABASE_URL) {
@@ -29,6 +31,9 @@ export async function GET() {
       databaseUrl: Boolean(process.env.DATABASE_URL),
       supabaseUrl: Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL),
       supabaseAnonKey: Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
+      paymentProvider: payment.requestedProvider,
+      paymentMode: payment.mode,
+      paymentOnlineConfigured: payment.mercadoPago.configured,
       vercelEnv: process.env.VERCEL_ENV ?? null,
       nodeEnv: process.env.NODE_ENV ?? null,
       commit: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? null,

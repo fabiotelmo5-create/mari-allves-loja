@@ -5,8 +5,10 @@ import { Button } from '@/components/button';
 import { ORDER_STATUS_LABELS, type OrderStatusValue } from '@/lib/order-status';
 import {
   saveShipmentAction,
+  syncMercadoPagoPaymentAction,
   updateOrderStatusAction,
   type OrderActionState,
+  type SyncPaymentState,
 } from '@/app/admin/orders-actions';
 
 function Feedback({ state }: { state: OrderActionState }) {
@@ -68,6 +70,49 @@ export function OrderStatusForm({
       <Feedback state={state} />
       <Button type="submit" disabled={pending}>
         {pending ? 'Salvando…' : 'Atualizar status'}
+      </Button>
+    </form>
+  );
+}
+
+function SyncPaymentFeedback({ state }: { state: SyncPaymentState }) {
+  if (!state) return null;
+
+  if (state.error) {
+    return (
+      <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700" role="alert">
+        {state.error}
+      </p>
+    );
+  }
+
+  if (state.success) {
+    return (
+      <p className="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-700" role="status">
+        {state.success}
+      </p>
+    );
+  }
+
+  return null;
+}
+
+export function SyncPaymentForm({ orderId }: { orderId: string }) {
+  const [state, formAction, pending] = useActionState(
+    syncMercadoPagoPaymentAction,
+    null
+  );
+
+  return (
+    <form action={formAction} className="space-y-3">
+      <input type="hidden" name="orderId" value={orderId} />
+      <p className="text-xs text-muted-foreground">
+        Consulta o status mais recente no Mercado Pago e atualiza o pedido. Use se o webhook
+        atrasar ou falhar.
+      </p>
+      <SyncPaymentFeedback state={state} />
+      <Button type="submit" variant="outline" disabled={pending}>
+        {pending ? 'Sincronizando…' : 'Sincronizar com Mercado Pago'}
       </Button>
     </form>
   );

@@ -40,8 +40,8 @@ export default function PrivacidadePage() {
             <p>
               Seus dados podem ser compartilhados com a Supabase (banco de
               dados e autenticação), a Vercel (hospedagem), serviços de entrega
-              e, quando o pagamento online for habilitado, com o provedor de
-              pagamento. Não vendemos seus dados.
+              e, quando o pagamento online estiver habilitado, com o Mercado
+              Pago para processar o pagamento. Não vendemos seus dados.
             </p>
           </section>
 

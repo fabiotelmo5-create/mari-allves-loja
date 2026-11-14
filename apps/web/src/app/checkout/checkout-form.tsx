@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, Loader2, Lock, MapPin, ShieldCheck, Truck, User } from 'lucide-react';
 import { Button } from '@/components/button';
+import type { PaymentMode } from '@/lib/payments/types';
 import { formatPrice } from '@/lib/utils';
 import type { Product } from '@/lib/mock-data';
 import { createOrderAction } from './actions';
@@ -65,7 +66,13 @@ function onlyDigits(value: string) {
   return value.replace(/\D/g, '');
 }
 
-export function CheckoutForm({ profile }: { profile: ProfilePrefill }) {
+export function CheckoutForm({
+  profile,
+  paymentMode,
+}: {
+  profile: ProfilePrefill;
+  paymentMode: PaymentMode;
+}) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const cepRef = useRef<HTMLInputElement>(null);
@@ -238,6 +245,12 @@ export function CheckoutForm({ profile }: { profile: ProfilePrefill }) {
       if (result?.orderCode) {
         localStorage.removeItem(CART_KEY);
         window.dispatchEvent(new Event('ma_cart_updated'));
+
+        if (result.checkoutUrl) {
+          window.location.assign(result.checkoutUrl);
+          return;
+        }
+
         router.push(`/pedido/${result.orderCode}`);
         return;
       }
@@ -411,17 +424,37 @@ export function CheckoutForm({ profile }: { profile: ProfilePrefill }) {
             <ShieldCheck className="h-4 w-4 text-rosé-700" />
             <h2 className="text-sm font-semibold text-rosé-700">Pagamento</h2>
           </div>
-          <div className="rounded-lg border border-rosé-200 bg-rosé-50/60 p-4">
-            <p className="text-sm font-medium text-rosé-700">Pagamento a combinar</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Após o pedido, a loja entra em contato pelo e-mail ou telefone informado para
-              combinar a forma de pagamento e confirmar a entrega.
-            </p>
-          </div>
-          <p className="mt-4 text-xs text-muted-foreground">
-            O estoque dos itens é separado assim que você finaliza o pedido. Se o pagamento não
-            for combinado, o pedido pode ser cancelado e os itens voltam ao estoque.
-          </p>
+          {paymentMode === 'mercado_pago' ? (
+            <>
+              <div className="rounded-lg border border-rosé-200 bg-rosé-50/60 p-4">
+                <p className="text-sm font-medium text-rosé-700">Pagamento pelo Mercado Pago</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Você será redirecionado para o ambiente seguro do Mercado Pago para concluir o
+                  pagamento com as opções disponíveis na sua conta. O pedido só é confirmado
+                  depois que o Mercado Pago aprovar a transação.
+                </p>
+              </div>
+              <p className="mt-4 text-xs text-muted-foreground">
+                O estoque dos itens é separado assim que você finaliza o pedido. Se o pagamento
+                não for concluído, a loja poderá cancelar o pedido e devolver os itens ao estoque.
+                O link de pagamento é válido por 48 horas.
+              </p>
+            </>
+          ) : (
+            <>
+              <div className="rounded-lg border border-rosé-200 bg-rosé-50/60 p-4">
+                <p className="text-sm font-medium text-rosé-700">Pagamento a combinar</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Após o pedido, a loja entra em contato pelo e-mail ou telefone informado para
+                  combinar a forma de pagamento e confirmar a entrega.
+                </p>
+              </div>
+              <p className="mt-4 text-xs text-muted-foreground">
+                O estoque dos itens é separado assim que você finaliza o pedido. Se o pagamento
+                não for combinado, o pedido pode ser cancelado e os itens voltam ao estoque.
+              </p>
+            </>
+          )}
         </section>
       </div>
 
@@ -510,8 +543,11 @@ export function CheckoutForm({ profile }: { profile: ProfilePrefill }) {
           <Button type="submit" disabled={!canSubmit} className="mt-5 w-full">
             {pending ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Finalizando…
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {paymentMode === 'mercado_pago' ? 'Abrindo pagamento…' : 'Finalizando…'}
               </>
+            ) : paymentMode === 'mercado_pago' ? (
+              'Ir para o pagamento'
             ) : (
               'Finalizar pedido'
             )}

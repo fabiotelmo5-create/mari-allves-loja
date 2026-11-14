@@ -10,10 +10,16 @@ import {
   ORDER_STATUS_LABELS,
   type OrderStatusValue,
 } from '@/lib/order-status';
-import { OrderStatusForm, ShipmentForm } from '../order-forms';
+import {
+  PAYMENT_STATUS_LABELS,
+  paymentMethodLabel,
+  paymentProviderLabel,
+} from '@/lib/payment-labels';
+import { OrderStatusForm, ShipmentForm, SyncPaymentForm } from '../order-forms';
 
 export const metadata = { title: 'Detalhe do pedido — Painel Mari Allves' };
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 
 type AddressSnapshot = {
   recipient?: string;
@@ -26,15 +32,6 @@ type AddressSnapshot = {
   district?: string;
   city?: string;
   state?: string;
-};
-
-const PAYMENT_STATUS_LABELS: Record<string, string> = {
-  PENDENTE: 'Pendente',
-  APROVADO: 'Aprovado',
-  RECUSADO: 'Recusado',
-  EXPIRADO: 'Expirado',
-  CANCELADO: 'Cancelado',
-  REEMBOLSADO: 'Reembolsado',
 };
 
 function formatDate(date: Date) {
@@ -183,10 +180,8 @@ export default async function AdminOrderPage({
                   <div key={payment.id} className="rounded-lg border border-border p-3 text-sm">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <span className="font-medium">
-                        {payment.provider === 'manual' ? 'Manual' : payment.provider} ·{' '}
-                        {payment.method === 'a_combinar'
-                          ? 'A combinar'
-                          : payment.method ?? '—'}
+                        {paymentProviderLabel(payment.provider)} ·{' '}
+                        {paymentMethodLabel(payment.method)}
                       </span>
                       <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
                         {PAYMENT_STATUS_LABELS[payment.status] ?? payment.status}
@@ -197,9 +192,19 @@ export default async function AdminOrderPage({
                     </p>
                   </div>
                 ))}
-                <p className="text-xs text-muted-foreground">
-                  Pagamento manual: confirme o recebimento antes de marcar o pedido como pago.
-                </p>
+                {order.payments.some((payment) => payment.provider === 'mercado_pago') ? (
+                  <>
+                    <p className="text-xs text-muted-foreground">
+                      Pagamento online: o status é confirmado pelo webhook do Mercado Pago. Não
+                      marque o pedido como pago manualmente.
+                    </p>
+                    <SyncPaymentForm orderId={order.id} />
+                  </>
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    Pagamento manual: confirme o recebimento antes de marcar o pedido como pago.
+                  </p>
+                )}
               </div>
             )}
           </section>

@@ -61,8 +61,18 @@ No painel do Vercel, vá em **Project Settings → Environment Variables** e adi
 |-------|------------------------|----------|
 | `NEXT_PUBLIC_APP_URL` | `http://localhost:3000` | `https://seu-dominio.com.br` |
 | `NEXT_PUBLIC_APP_NAME` | Mari Allves — Moda Modesta | Mari Allves — Moda Modesta |
+| `NEXT_PUBLIC_SUPABASE_URL` | URL do projeto Supabase | URL do projeto Supabase |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | chave anon | chave anon |
+| `DATABASE_URL` | pooler 6543 | pooler 6543 |
+| `DIRECT_URL` | session pooler 5432 | session pooler 5432 |
+| `PAYMENT_PROVIDER` | `manual` ou `mercado_pago` | `manual` até homologar; depois `mercado_pago` |
+| `MERCADO_PAGO_ACCESS_TOKEN` | vazio ou token de teste | token de produção |
+| `MERCADO_PAGO_WEBHOOK_SECRET` | vazio ou segredo de teste | segredo do webhook |
+| `MERCADO_PAGO_SANDBOX` | `true` com credenciais de teste | `false` |
 
-> As variáveis do Supabase e pagamento (`DATABASE_URL`, `MERCADO_PAGO_ACCESS_TOKEN`, etc.) só são necessárias quando conectarmos o banco. Por enquanto, deixe apenas as duas acima.
+> As variáveis de pagamento podem ficar vazias: a loja usa o pagamento manual
+> como fallback. Para ativar o Checkout Pro, siga a seção 2.6 de
+> `docs/04-plano-e-pendencias.md`.
 
 Clique em **Save** e depois em **Redeploy** para aplicar.
 

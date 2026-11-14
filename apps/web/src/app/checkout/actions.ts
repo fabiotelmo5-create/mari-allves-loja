@@ -2,11 +2,17 @@
 
 import { randomBytes } from 'node:crypto';
 import { revalidatePath } from 'next/cache';
-import { prisma } from '@mari-allves/db';
+import { Prisma, prisma } from '@mari-allves/db';
 import { getCurrentProfile } from '@/lib/auth';
+import { getPaymentConfig } from '@/lib/payments/config';
+import { createMercadoPagoPreference } from '@/lib/payments/mercado-pago';
 import { cepMatches, onlyDigits } from '@/lib/shipping';
 
-export type CheckoutState = { error?: string; orderCode?: string } | null;
+export type CheckoutState = {
+  error?: string;
+  orderCode?: string;
+  checkoutUrl?: string;
+} | null;
 
 type CartInput = { variantId: string; quantity: number };
 
@@ -62,6 +68,97 @@ function readExpectedCents(value: FormDataEntryValue | null) {
   return Number.isInteger(number) && number >= 0 ? number : null;
 }
 
+/**
+ * Se o provedor estiver configurado mas a criação da preferência falhar,
+ * o pedido é cancelado e o estoque volta. Nenhuma cobrança é criada nesse caso.
+ */
+async function cancelOrderAfterPaymentFailure(
+  orderId: string,
+  orderCode: string
+): Promise<boolean> {
+  try {
+    const canceled = await prisma.$transaction(async (tx) => {
+      const order = await tx.order.findUnique({
+        where: { id: orderId },
+        include: { items: true },
+      });
+
+      if (!order || order.status !== 'AGUARDANDO_PAGAMENTO') return false;
+
+      for (const item of order.items) {
+        if (!item.variantId) continue;
+
+        const stock = await tx.stock.findUnique({
+          where: { variantId: item.variantId },
+        });
+        if (!stock) continue;
+
+        await tx.stock.update({
+          where: { id: stock.id },
+          data: { quantity: { increment: item.quantity } },
+        });
+
+        await tx.stockMovement.create({
+          data: {
+            stockId: stock.id,
+            type: 'DEVOLUCAO',
+            quantity: item.quantity,
+            reason: `Falha ao iniciar pagamento online do pedido ${orderCode}`,
+            changedBy: 'system',
+          },
+        });
+      }
+
+      await tx.order.update({
+        where: { id: orderId },
+        data: { status: 'CANCELADO' },
+      });
+
+      await tx.orderStatusHistory.create({
+        data: {
+          orderId,
+          fromStatus: 'AGUARDANDO_PAGAMENTO',
+          toStatus: 'CANCELADO',
+          note: 'Pagamento online indisponível. Pedido cancelado automaticamente; nenhum valor foi cobrado.',
+          changedBy: 'system',
+        },
+      });
+
+      await tx.payment.updateMany({
+        where: { orderId },
+        data: {
+          status: 'CANCELADO',
+          raw: { error: 'preference_creation_failed' },
+        },
+      });
+
+      await tx.auditLog.create({
+        data: {
+          tableName: 'Order',
+          recordId: orderId,
+          action: 'UPDATE',
+          changedBy: 'system',
+          oldData: { status: 'AGUARDANDO_PAGAMENTO' },
+          newData: {
+            status: 'CANCELADO',
+            reason: 'payment_provider_unavailable',
+          },
+        },
+      });
+
+      return true;
+    });
+
+    revalidatePath('/admin/pedidos');
+    revalidatePath('/meus-pedidos');
+    revalidatePath('/catalogo');
+    return canceled;
+  } catch (error) {
+    console.error('cancelOrderAfterPaymentFailure failed', error);
+    return false;
+  }
+}
+
 export async function createOrderAction(
   _previousState: CheckoutState,
   formData: FormData
@@ -83,9 +180,22 @@ export async function createOrderAction(
   // Reenvio do mesmo formulário: devolve o pedido já criado em vez de duplicar.
   const existingOrder = await prisma.order.findUnique({
     where: { idempotencyKey },
-    select: { code: true },
+    select: {
+      code: true,
+      payments: {
+        where: { provider: 'mercado_pago' },
+        orderBy: { createdAt: 'desc' },
+        take: 1,
+        select: { checkoutUrl: true },
+      },
+    },
   });
-  if (existingOrder) return { orderCode: existingOrder.code };
+  if (existingOrder) {
+    return {
+      orderCode: existingOrder.code,
+      checkoutUrl: existingOrder.payments[0]?.checkoutUrl ?? undefined,
+    };
+  }
 
   const customerName = String(formData.get('customerName') ?? '').trim();
   const customerEmail = String(formData.get('customerEmail') ?? '').trim().toLowerCase();
@@ -183,6 +293,10 @@ export async function createOrderAction(
   }
 
   const code = generateOrderCode();
+  const paymentConfig = getPaymentConfig();
+  const mercadoPagoAccessToken = paymentConfig.mercadoPago.accessToken ?? '';
+  const onlinePayment =
+    paymentConfig.mode === 'mercado_pago' && mercadoPagoAccessToken.length > 0;
 
   try {
     const order = await prisma.$transaction(async (tx) => {
@@ -259,7 +373,9 @@ export async function createOrderAction(
           orderId: created.id,
           fromStatus: null,
           toStatus: 'AGUARDANDO_PAGAMENTO',
-          note: 'Pedido criado pelo site. Pagamento a combinar com a loja.',
+          note: onlinePayment
+            ? 'Pedido criado pelo site. Aguardando pagamento online pelo Mercado Pago.'
+            : 'Pedido criado pelo site. Pagamento a combinar com a loja.',
           changedBy: 'system',
         },
       });
@@ -267,10 +383,12 @@ export async function createOrderAction(
       await tx.payment.create({
         data: {
           orderId: created.id,
-          provider: 'manual',
-          providerTxId: `manual-${created.id}`,
+          provider: onlinePayment ? 'mercado_pago' : 'manual',
+          providerTxId: onlinePayment
+            ? `mp-pending-${created.id}`
+            : `manual-${created.id}`,
           idempotencyKey: `payment-${idempotencyKey}`,
-          method: 'a_combinar',
+          method: onlinePayment ? null : 'a_combinar',
           status: 'PENDENTE',
           amountCents: totalCents,
         },
@@ -294,7 +412,69 @@ export async function createOrderAction(
     revalidatePath('/meus-pedidos');
     revalidatePath('/catalogo');
 
-    return { orderCode: order.code };
+    if (!onlinePayment) {
+      return { orderCode: order.code };
+    }
+
+    try {
+      const preference = await createMercadoPagoPreference({
+        orderCode: order.code,
+        orderId: order.id,
+        items: orderItems.map((item) => ({
+          id: item.variant.sku,
+          title: `${item.variant.product.name} (${item.variant.size} / ${item.variant.color})`,
+          quantity: item.quantity,
+          unitPriceCents: item.unitPriceCents,
+        })),
+        shippingTitle: zone.name,
+        shippingCents,
+        payer: {
+          name: customerName,
+          email: customerEmail,
+          phone: customerPhone,
+        },
+        appUrl: paymentConfig.appUrl,
+        accessToken: mercadoPagoAccessToken,
+        sandbox: paymentConfig.mercadoPago.sandbox,
+      });
+
+      const updated = await prisma.payment.updateMany({
+        where: {
+          orderId: order.id,
+          provider: 'mercado_pago',
+          providerTxId: `mp-pending-${order.id}`,
+        },
+        data: {
+          providerTxId: `pref-${preference.preferenceId}`,
+          providerPreferenceId: preference.preferenceId,
+          checkoutUrl: preference.checkoutUrl,
+          raw: preference.raw as Prisma.InputJsonValue,
+        },
+      });
+
+      if (updated.count === 0) {
+        // O webhook pode ter chegado antes da resposta da preferência. Nesse
+        // caso, preserva o ID real do pagamento e só completa a URL.
+        await prisma.payment.updateMany({
+          where: { orderId: order.id, provider: 'mercado_pago' },
+          data: {
+            providerPreferenceId: preference.preferenceId,
+            checkoutUrl: preference.checkoutUrl,
+          },
+        });
+      }
+
+      revalidatePath(`/pedido/${order.code}`);
+      return { orderCode: order.code, checkoutUrl: preference.checkoutUrl };
+    } catch (error) {
+      console.error('Mercado Pago preference creation failed', error);
+      const canceled = await cancelOrderAfterPaymentFailure(order.id, order.code);
+      return {
+        error: canceled
+          ? 'Não foi possível iniciar o pagamento online agora. Nenhum valor foi cobrado e o pedido foi cancelado. Tente novamente em instantes.'
+          : 'Não foi possível iniciar o pagamento online agora. Nenhum valor foi cobrado. Tente novamente em instantes ou fale com a loja.',
+      };
+    }
   } catch (error) {
     if (error instanceof StockError) {
       return {

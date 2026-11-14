@@ -84,17 +84,26 @@ Tabelas principais (nomes provisórios; em inglês no banco, textos em pt-BR na 
 - Alternativa: `UPDATE stock SET quantity = quantity - $1 WHERE variant_id = $2 AND quantity >= $1 RETURNING quantity` → se `0` linhas, sem estoque.
 - Nunca estoque negativo; teste de concorrência obrigatório no aceite.
 
-## 5. Fluxo de pagamento (abstraído)
+## 5. Fluxo de pagamento
+
+Implementação atual: **Mercado Pago Checkout Pro** (`provider='mercado_pago'`),
+com pagamento manual como fallback quando as chaves não estão configuradas.
 
 ```
 1. Cliente confirma pedido  → cria order (status: aguardando_pagamento) + reserva estoque
-2. Checkout chama PaymentProvider.createCharge(order) → provider_tx_id + idempotency_key
-3. Cliente paga no provedor (Pix/cartão/boleto)
-4. Provedor chama POST /api/webhooks/payments (com assinatura)
-5. Handler valida assinatura → grava payment_event (idempotente) → atualiza payment + order
+2. Checkout cria preferência no Mercado Pago → preference_id + checkout_url
+3. Cliente paga no ambiente do Mercado Pago (Pix/cartão/boleto)
+4. Mercado Pago chama POST /api/webhooks/mercado-pago (assinatura x-signature)
+5. Handler valida HMAC, consulta o pagamento na API, confere o valor e grava
+   payment_event (idempotente) → atualiza payment + order
 6. NUNCA confiar em página de sucesso do cliente
-7. Reembolso: PaymentProvider.refund(payment) → atualiza status + financeiro
+7. Reembolso: por enquanto feito no painel do Mercado Pago; o webhook atualiza
+   o pedido. Estorno automático pela API ainda não está habilitado.
 ```
+
+O admin também pode usar **Sincronizar com Mercado Pago** no detalhe do pedido
+para reconciliar um webhook atrasado. Confirmação manual de pagamento online é
+bloqueada.
 
 ## 6. Autenticação e autorização
 

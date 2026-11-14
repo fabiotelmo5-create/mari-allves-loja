@@ -188,7 +188,7 @@ export function Navbar() {
             <span className="hidden text-white/60 sm:inline">•</span>
             <span className="hidden sm:inline">Frete calculado pelo CEP no checkout</span>
             <span className="hidden text-white/60 md:inline">•</span>
-            <span className="hidden md:inline">Pagamento a combinar</span>
+            <span className="hidden md:inline">Pagamento no checkout</span>
           </div>
         </div>
 

@@ -13,6 +13,7 @@
 | D7 | Fiscal (NFC-e/NF-e) | Fora do MVP — fase posterior | 2026-10-20 |
 | D8 | Dados da empresa | A confirmar (PF ou PJ) | 2026-10-20 |
 | D9 | Formato da entrega | Markdown + wireframes ASCII | 2026-10-20 |
+| D10 | Pagamento online | Mercado Pago Checkout Pro; manual como fallback até as chaves | 2026-11-14 |
 
 ## 2. Plano de fases
 
@@ -42,7 +43,7 @@ Legenda: ✅ concluído · 🟡 em andamento · ⬜ não iniciado
 | **1 — Fundação** | 🟡 90% | Schema + migrations, design system, layouts, **Supabase Auth (cadastro/login/logout/senha)**, RBAC admin, RLS no Profile | RLS nas demais tabelas, SMTP próprio |
 | **2 — Catálogo** | 🟡 85% | Páginas, leitura do banco via Prisma, seed (6 produtos), **CRUD de produtos no admin**, **busca `/busca`**, **filtros de categoria (tamanho, preço, ordenação)** | Produtos/fotos reais, "mais vendidos" (sem histórico de vendas), curadoria de destaques |
 | **3 — Carrinho e checkout** | ✅ 90% | Carrinho localStorage, frete por CEP, checkout guest/conta, pedido no banco com idempotência, baixa atômica de estoque, pagamento manual, rastreio público, admin de pedidos, cancelamento com devolução | Cupom, carrinho persistente no banco, pagamento real (Fase 4) |
-| **4 — Pagamentos** | ⬜ 0% | Interface de pagamento manual (`provider='manual'`, `method='a_combinar'`) | Provedor, webhooks, reconciliação |
+| **4 — Pagamentos** | 🟡 70% | **Checkout Pro do Mercado Pago** (preferência + redirect), webhook com assinatura, idempotência, sincronização de status, reconciliação manual no admin e fallback para pagamento manual | Chaves de produção, homologação ponta a ponta, reembolso automático, e-mail de confirmação |
 | **5 — Área do cliente** | 🟡 70% | Login/cadastro, `/conta`, `/meus-pedidos`, rastreio, redefinição de senha | Endereços salvos, favoritos, edição de dados |
 | **6 — Admin completo** | 🟡 70% | RBAC, dashboard, CRUD produtos/variações/estoque, pedidos (lista/detalhe/status/rastreio), auditoria | Clientes, cupons, conteúdo, usuários admin, relatórios |
 | **7 — Logística** | 🟡 40% | Zona de frete por CEP (Barreiras, R$ 12 placeholder), prazo, rastreio por shipment | Regras/taxas confirmadas, transportadoras, retirada |
@@ -59,7 +60,7 @@ Legenda: ✅ concluído · 🟡 em andamento · ⬜ não iniciado
 5. **Dados da empresa/contato** — bloqueia páginas legais, contato e rodapé completos.
 6. **SMTP + URLs do Supabase** — bloqueia confirmação de cadastro e recuperação de senha.
 7. **Frete real** — confirmar zona, taxa e prazo de Barreiras/BA.
-8. **Pagamento (Fase 4)** — depende de conta homologada.
+8. **Pagamento (Fase 4)** — código pronto; falta inserir as chaves do Mercado Pago e homologar com uma compra de teste.
 9. **Go-live** — domínio, backups, monitoramento e E2E em produção.
 
 ## 2.2 Configuração pendente no Supabase (Auth)
@@ -136,7 +137,71 @@ Fluxo de compra completo, ainda **sem pagamento online**:
 - Cancelamento: estoque restaurado e movimento `DEVOLUCAO` único.
 - Dados de teste removidos; catálogo de demonstração e estoque restaurados.
 
-**Limitações conhecidas:** pagamento manual (sem provedor), cupom não implementado, carrinho em `localStorage`, uma única zona de frete placeholder, sem nota fiscal, produtos/fotos de demonstração e dados da empresa/contato pendentes.
+**Limitações conhecidas:** cupom não implementado, carrinho em `localStorage`, uma única zona de frete placeholder, sem nota fiscal, produtos/fotos de demonstração e dados da empresa/contato pendentes.
+
+## 2.6 Mercado Pago — preparação do Checkout Pro (2026-11-14)
+
+O código do pagamento online está pronto, mas **desligado** até as chaves serem
+configuradas. Sem `MERCADO_PAGO_ACCESS_TOKEN` **e** `MERCADO_PAGO_WEBHOOK_SECRET`,
+a loja usa automaticamente o pagamento manual (“a combinar”), sem quebrar o
+checkout.
+
+### Como funciona
+
+1. O checkout cria o pedido e reserva o estoque como antes.
+2. Com o Mercado Pago configurado, o servidor cria uma **preferência do Checkout Pro** e redireciona o cliente para o ambiente do Mercado Pago.
+3. O cliente paga com as opções habilitadas na conta (Pix, cartão, boleto etc.).
+4. O Mercado Pago chama `POST /api/webhooks/mercado-pago`.
+5. O servidor valida a assinatura `x-signature`, consulta o pagamento na API do Mercado Pago, confere o valor e atualiza `Payment` + `Order` de forma idempotente.
+6. A página de retorno do checkout **não** altera status; ela apenas mostra o estado real do banco.
+7. Se a criação da preferência falhar, o pedido é cancelado e o estoque volta. Nenhuma cobrança é criada.
+
+### Variáveis necessárias na Vercel
+
+Configurar em **Production** (e em **Preview/Development** se for testar):
+
+| Variável | Valor |
+|---|---|
+| `PAYMENT_PROVIDER` | `mercado_pago` |
+| `MERCADO_PAGO_ACCESS_TOKEN` | Access Token de produção (ou de teste, no sandbox) |
+| `MERCADO_PAGO_WEBHOOK_SECRET` | Segredo exibido ao configurar o webhook no Mercado Pago |
+| `MERCADO_PAGO_SANDBOX` | `true` somente com credenciais de teste; `false` em produção |
+| `NEXT_PUBLIC_APP_URL` | `https://mari-allves-loja.vercel.app` (já configurada) |
+
+`MERCADO_PAGO_PUBLIC_KEY` não é usada pelo Checkout Pro. Ela fica reservada para
+uma futura integração de checkout transparente.
+
+Depois de adicionar/alterar as variáveis, fazer um novo deploy.
+
+### Configurar o webhook no Mercado Pago
+
+1. No painel do Mercado Pago, criar uma aplicação (ou usar a existente).
+2. Em **Webhooks**, cadastrar a URL:
+   `https://mari-allves-loja.vercel.app/api/webhooks/mercado-pago`
+3. Selecionar o evento **Pagamentos** (`payment`).
+4. Copiar o **segredo** gerado e salvar em `MERCADO_PAGO_WEBHOOK_SECRET`.
+5. Garantir que a **Deployment Protection** da Vercel não bloqueie `/api/webhooks/*`; o Mercado Pago precisa alcançar a rota publicamente.
+
+### Teste seguro
+
+- Use credenciais de **teste** e `MERCADO_PAGO_SANDBOX=true`.
+- Faça uma compra de teste e confira:
+  - redirecionamento para o Checkout Pro;
+  - pagamento aparecendo no painel do Mercado Pago;
+  - pedido mudando para `PAGAMENTO_CONFIRMADO` somente após o webhook;
+  - estoque baixado uma única vez;
+  - botão **Sincronizar com Mercado Pago** no detalhe do pedido, para reconciliar webhook atrasado.
+- O webhook não funciona com `localhost`; para testar localmente, use um túnel HTTPS ou faça o teste em Preview/Produção.
+- **Não** use credenciais de produção para testes.
+
+### Segurança e limites atuais
+
+- O webhook valida HMAC-SHA256 e confere o valor do pagamento contra o total do pedido.
+- Eventos duplicados são ignorados por `providerEventId` único.
+- Nenhum dado de cartão é armazenado; o Checkout Pro mantém os dados no Mercado Pago.
+- O admin **não** consegue marcar um pagamento online como confirmado manualmente.
+- Reembolso online ainda é feito no painel do Mercado Pago; o webhook atualiza o pedido. Não há botão de estorno automático.
+- Falta homologar com uma compra real/teste e configurar e-mail de confirmação de pagamento.
 
 ## 3. Definição de "pronto" (DoD)
 
@@ -154,7 +219,7 @@ Fluxo de compra completo, ainda **sem pagamento online**:
 | Risco | Impacto | Mitigação |
 |---|---|---|
 | Domínio não registrado | Não há HTTPS/produção | Registrar `.com.br` no NIC.br |
-| Conta de pagamento não homologada | Não recebe de verdade | Abrir/homologar conta antes da Fase 4 |
+| Conta de pagamento não homologada / chaves ausentes | Checkout cai no manual e não recebe online | Inserir Access Token + segredo do webhook e homologar com compra de teste |
 | Dados da empresa pendentes (PF/PJ) | Páginas legais e pagamento travados | Confirmar enquadramento com contador |
 | Escopo grande demais | Prazo estoura | MVP enxuto; congelar escopo por fase |
 | Estoque concorrente | Venda acima do estoque | Transações + `FOR UPDATE` + testes de concorrência |
@@ -171,7 +236,7 @@ Fluxo de compra completo, ainda **sem pagamento online**:
    - Há ponto físico (para retirada) ou só entrega por motoboy?
 3. **Logomarca:** qual o formato do arquivo (PNG/SVG/vetor)? Posso usar sem alterar a identidade.
 4. **Produtos:** me passe a lista (nome, SKU, categoria, tamanhos, cores, preços, estoque, descrição). Posso gerar o CSV de importação.
-5. **Pagamento:** quando decidir, me diga o provedor (Mercado Pago/PagBank) e se já tem conta homologada.
+5. **Pagamento:** provedor definido: Mercado Pago (Checkout Pro). Falta você criar/obter as credenciais e o segredo do webhook; a integração já está preparada.
 6. **E-mail transacional:** quer Resend, SendGrid ou outro?
 7. **Frete:** a zona "Barreiras e região" (R$ 12 / 1 dia) é placeholder. Confirmar taxa, prazo e se haverá retirada.
 8. **Contato:** e-mail, WhatsApp e horário de atendimento oficiais.
@@ -192,7 +257,8 @@ Fluxo de compra completo, ainda **sem pagamento online**:
 - [ ] Confirmar frete e retirada.
 - [ ] Configurar SMTP e URLs de redirecionamento no Supabase.
 - [ ] Rotacionar a senha do banco exposta e atualizar a Vercel.
-- [ ] Criar/homologar conta de pagamento (Mercado Pago/PagBank).
+- [ ] Inserir as chaves do Mercado Pago na Vercel (`MERCADO_PAGO_ACCESS_TOKEN`, `MERCADO_PAGO_WEBHOOK_SECRET`) e ativar `PAYMENT_PROVIDER=mercado_pago`.
+- [ ] Homologar o Checkout Pro com uma compra de teste e conferir o webhook.
 - [ ] Registrar o domínio e configurar o DNS.
 
 ## 6. Métricas de sucesso (pós-lançamento)
