@@ -32,6 +32,9 @@ Thumbs.db
 # Prisma
 prisma/migrations/*.lock
 
+# Imagens de produtos (trabalho local, não versionar)
+imgs_prods/
+
 # Turborepo
 .turbo/
 .vercel
