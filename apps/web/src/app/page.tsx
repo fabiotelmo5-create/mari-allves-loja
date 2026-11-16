@@ -111,23 +111,6 @@ export default async function Home() {
         </Link>
       </section>
 
-      {/* Novidades */}
-      <section className="py-12 bg-rosé-50">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-serif text-rosé-700">Novidades</h2>
-            <Link href="/novidades" className="text-sm text-rosé-700 hover:underline">
-              Ver todas →
-            </Link>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-            {newArrivals.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Promoções */}
       {promotions.length > 0 && (
         <section className="py-12 bg-rosé-50/50">
@@ -146,6 +129,23 @@ export default async function Home() {
           </div>
         </section>
       )}
+
+      {/* Novidades */}
+      <section className="py-12 bg-rosé-50">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-2xl font-serif text-rosé-700">Novidades</h2>
+            <Link href="/novidades" className="text-sm text-rosé-700 hover:underline">
+              Ver todas →
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+            {newArrivals.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        </div>
+      </section>
     </main>
   );
 }
