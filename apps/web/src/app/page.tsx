@@ -2,7 +2,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Star, Truck, Tag, ShieldCheck } from 'lucide-react';
 import { ProductCard } from '@/components/product-card';
-import { Button } from '@/components/button';
 import { getNewArrivals, getPromotions, listCategories } from '@/lib/catalog';
 import { getCategoryImage } from '@/lib/category-images';
 
@@ -18,33 +17,39 @@ export default async function Home() {
 
   return (
     <main className="flex-1">
-      {/* Hero banner */}
-      <section className="relative overflow-hidden">
-        <div className="relative bg-rosé-50 border-y border-rosé-100">
-          <div className="max-w-7xl mx-auto px-4 py-16 text-center lg:py-24 lg:px-8 relative z-10">
-            <h1 className="text-4xl font-serif text-rosé-700 tracking-tight mb-6 sm:text-5xl lg:text-6xl">
-              Mari Allves — <br /> <span className="text-rosé-400">Moda Modesta</span>
-            </h1>
-            <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Roupas e acessórios de moda modesta com elegância, delicadeza e
-              profissionalismo. Blusas, saias, vestidos e acessórios para você
-              se sentir confiante em cada ocasião.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-              <Button asChild size="lg">
-                <Link href="/categoria/saias">Ver coleção</Link>
-              </Button>
-              <Button variant="outline" asChild size="lg">
-                <Link href="/novidades">Novidades</Link>
-              </Button>
-            </div>
-          </div>
+      {/* Vídeo hero — primeira tela */}
+      <section className="relative overflow-hidden bg-rosé-950">
+        <video
+          className="h-[70vh] min-h-[420px] w-full object-cover md:h-[82vh]"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          aria-label="Vídeo da Mari Allves com modelos usando as roupas da coleção"
+        >
+          <source src="/marketing/video-hero.mp4" type="video/mp4" />
+          Seu navegador não suporta vídeo.
+        </video>
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-black/20" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 px-4 pb-10 text-center">
+          <p className="font-serif text-3xl text-white drop-shadow-lg sm:text-4xl">
+            Mari Allves — Moda Modesta
+          </p>
+        </div>
+      </section>
 
-          {/* Decorative circles */}
-          <div className="absolute top-0 left-0 w-full h-full -z-10">
-            <div className="absolute top-1/4 left-1/10 w-64 h-64 bg-rosé-200 rounded-full blur-3xl opacity-50" />
-            <div className="absolute bottom-1/5 right-1/10 w-72 h-72 bg-rosé-200 rounded-full blur-3xl opacity-40" />
-          </div>
+      {/* Foto da marca */}
+      <section className="bg-rosé-50">
+        <div className="mx-auto max-w-3xl px-4 py-10">
+          <Image
+            src="/marketing/mari-allves.jpg"
+            alt="Mari Allves — Moda Evangélica"
+            width={1303}
+            height={1207}
+            className="mx-auto w-full rounded-xl object-contain shadow-sm"
+            priority
+          />
         </div>
       </section>
 
@@ -102,6 +107,22 @@ export default async function Home() {
               );
             })}
           </div>
+        </div>
+      </section>
+
+      {/* Banner Black Friday — acima dos produtos */}
+      <section className="bg-white py-10">
+        <div className="mx-auto max-w-5xl px-4">
+          <Link href="/catalogo" className="block overflow-hidden rounded-2xl shadow-sm transition-transform hover:scale-[1.01]">
+            <Image
+              src="/marketing/black-friday.jpg"
+              alt="Primeira Black Friday Mari Allves — novembro, até 50% de desconto e frete grátis para Barreiras"
+              width={982}
+              height={988}
+              className="w-full object-contain"
+              priority
+            />
+          </Link>
         </div>
       </section>
 
