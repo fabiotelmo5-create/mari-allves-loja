@@ -56,10 +56,10 @@ export default async function ProductPage({
             </div>
 
             {/* Preço */}
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <div className="group flex flex-wrap items-center gap-x-3 gap-y-1">
               {hasPromo && product.previousPriceCents && (
                 <>
-                  <span className="text-xl text-muted-foreground line-through">
+                  <span className="inline-block text-xl text-muted-foreground line-through transition-all duration-200 group-hover:scale-95 group-hover:text-muted-foreground/70">
                     {formatPrice(product.previousPriceCents)}
                   </span>
                   <span className="rounded-full border border-rosé-200 bg-rosé-100 px-2 py-0.5 text-xs font-semibold text-rosé-700">
@@ -67,7 +67,7 @@ export default async function ProductPage({
                   </span>
                 </>
               )}
-              <span className={`font-bold text-rosé-700 ${hasPromo ? 'text-4xl' : 'text-3xl'}`}>
+              <span className={`inline-block font-bold text-rosé-700 transition-transform duration-200 group-hover:scale-105 ${hasPromo ? 'text-4xl' : 'text-3xl'}`}>
                 {formatPrice(product.priceCents)}
               </span>
             </div>

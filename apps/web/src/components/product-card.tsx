@@ -48,12 +48,12 @@ export function ProductCard({ product }: ProductCardProps) {
 
         <div className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-1">
           {hasPromo && previousPriceCents != null && (
-            <span className="text-sm text-muted-foreground line-through">
+            <span className="inline-block origin-left text-sm text-muted-foreground line-through transition-all duration-200 group-hover:scale-95 group-hover:text-muted-foreground/70">
               {formatPrice(previousPriceCents)}
             </span>
           )}
           <span
-            className={`inline-block origin-left font-bold text-rosé-700 transition-all duration-200 group-hover:scale-105 group-hover:text-rosé-800 ${
+            className={`inline-block origin-left font-bold text-rosé-700 transition-all duration-200 group-hover:scale-110 group-hover:text-rosé-800 ${
               hasPromo ? 'text-xl' : 'text-base'
             }`}
           >
