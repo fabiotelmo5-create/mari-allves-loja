@@ -35,19 +35,15 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <header className="border-b border-border bg-white">
         <div className="flex h-14 items-center justify-between px-4 lg:px-6">
           <div className="flex items-center gap-3">
-            <Link href="/admin" className="flex items-center gap-2">
+            <Link href="/admin" className="flex items-center">
               <Image
-                src="/logo-mari-allves.svg"
-                alt=""
-                width={34}
-                height={34}
-                className="h-8 w-8"
+                src="/logo-mari-allves.png"
+                alt="Mari Allves — Moda Evangélica"
+                width={128}
+                height={128}
+                className="h-9 w-9 rounded-lg object-cover"
                 unoptimized
               />
-              <span className="flex items-baseline gap-1 font-serif text-lg font-bold tracking-tight">
-                <span className="text-rosé-700">Mari</span>
-                <span className="text-rosé-400">Allves</span>
-              </span>
             </Link>
             <span className="rounded-full bg-rosé-50 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-rosé-700">
               Admin

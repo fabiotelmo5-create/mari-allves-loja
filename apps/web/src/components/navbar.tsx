@@ -203,25 +203,16 @@ export function Navbar() {
             <Menu className="h-5 w-5" />
           </button>
 
-          <Link href="/" className="flex shrink-0 items-center gap-2" aria-label="Mari Allves — início">
+          <Link href="/" className="flex shrink-0 items-center" aria-label="Mari Allves — início">
             <Image
-              src="/logo-mari-allves.svg"
-              alt=""
-              width={40}
-              height={40}
-              className="h-10 w-10"
+              src="/logo-mari-allves.png"
+              alt="Mari Allves — Moda Evangélica"
+              width={128}
+              height={128}
+              className="h-12 w-12 rounded-lg object-cover"
               priority
               unoptimized
             />
-            <span className="flex flex-col leading-none">
-              <span className="flex items-baseline gap-1 font-serif text-lg font-bold tracking-tight">
-                <span className="text-rosé-700">Mari</span>
-                <span className="text-rosé-400">Allves</span>
-              </span>
-              <span className="mt-1 hidden text-[10px] uppercase tracking-[0.18em] text-muted-foreground sm:block">
-                Moda Modesta
-              </span>
-            </span>
           </Link>
 
           <SearchForm className="ml-2 hidden min-w-0 flex-1 md:flex" inputClassName="h-10" />
@@ -279,24 +270,15 @@ export function Navbar() {
             className="absolute left-0 top-0 flex h-full w-[min(88vw,360px)] flex-col overflow-y-auto bg-background p-5 shadow-2xl"
           >
             <div className="flex items-center justify-between gap-3">
-              <Link href="/" onClick={closeMenu} className="flex items-center gap-2">
+              <Link href="/" onClick={closeMenu} className="flex items-center">
                 <Image
-                  src="/logo-mari-allves.svg"
-                  alt=""
-                  width={40}
-                  height={40}
-                  className="h-10 w-10"
+                  src="/logo-mari-allves.png"
+                  alt="Mari Allves — Moda Evangélica"
+                  width={128}
+                  height={128}
+                  className="h-12 w-12 rounded-lg object-cover"
                   unoptimized
                 />
-                <span className="flex flex-col leading-none">
-                  <span className="flex items-baseline gap-1 font-serif text-lg font-bold tracking-tight">
-                    <span className="text-rosé-700">Mari</span>
-                    <span className="text-rosé-400">Allves</span>
-                  </span>
-                  <span className="mt-1 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                    Moda Modesta
-                  </span>
-                </span>
               </Link>
               <button
                 ref={closeButtonRef}

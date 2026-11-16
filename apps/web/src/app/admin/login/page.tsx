@@ -20,24 +20,16 @@ export default async function AdminLoginPage({
     <main className="flex-1 flex items-center justify-center bg-rosé-50">
       <div className="max-w-md w-full px-4">
         <div className="text-center mb-8">
-          <Link href="/" className="mb-4 flex items-center justify-center gap-2">
+          <Link href="/" className="mb-4 flex items-center justify-center">
             <Image
-              src="/logo-mari-allves.svg"
-              alt=""
-              width={40}
-              height={40}
-              className="h-10 w-10"
+              src="/logo-mari-allves.png"
+              alt="Mari Allves — Moda Evangélica"
+              width={128}
+              height={128}
+              className="h-16 w-16 rounded-lg object-cover"
+              priority
               unoptimized
             />
-            <span className="flex flex-col items-start leading-none">
-              <span className="flex items-baseline gap-1 font-serif text-xl font-bold tracking-tight">
-                <span className="text-rosé-700">Mari</span>
-                <span className="text-rosé-400">Allves</span>
-              </span>
-              <span className="mt-1 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                Moda Modesta
-              </span>
-            </span>
           </Link>
           <h1 className="text-lg font-serif text-rosé-700">Área administrativa</h1>
           <p className="text-xs text-muted-foreground">Acesso restrito à equipe da loja.</p>

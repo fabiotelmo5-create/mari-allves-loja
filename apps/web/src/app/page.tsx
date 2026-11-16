@@ -39,19 +39,6 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Faixa da marca */}
-      <section className="bg-rosé-50">
-        <Image
-          src="/marketing/mari-allves-banner.jpg"
-          alt="Mari Allves — Moda Evangélica"
-          width={1600}
-          height={600}
-          className="w-full object-cover"
-          sizes="100vw"
-          priority
-        />
-      </section>
-
       {/* Benefícios */}
       <section className="py-8 bg-white">
         <div className="max-w-7xl mx-auto px-4">
