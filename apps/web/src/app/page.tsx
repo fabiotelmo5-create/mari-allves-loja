@@ -39,18 +39,17 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Foto da marca */}
+      {/* Faixa da marca */}
       <section className="bg-rosé-50">
-        <div className="mx-auto max-w-3xl px-4 py-10">
-          <Image
-            src="/marketing/mari-allves.jpg"
-            alt="Mari Allves — Moda Evangélica"
-            width={1303}
-            height={1207}
-            className="mx-auto w-full rounded-xl object-contain shadow-sm"
-            priority
-          />
-        </div>
+        <Image
+          src="/marketing/mari-allves-banner.jpg"
+          alt="Mari Allves — Moda Evangélica"
+          width={1600}
+          height={600}
+          className="w-full object-cover"
+          sizes="100vw"
+          priority
+        />
       </section>
 
       {/* Benefícios */}
@@ -110,20 +109,19 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Banner Black Friday — acima dos produtos */}
-      <section className="bg-white py-10">
-        <div className="mx-auto max-w-5xl px-4">
-          <Link href="/catalogo" className="block overflow-hidden rounded-2xl shadow-sm transition-transform hover:scale-[1.01]">
-            <Image
-              src="/marketing/black-friday.jpg"
-              alt="Primeira Black Friday Mari Allves — novembro, até 50% de desconto e frete grátis para Barreiras"
-              width={982}
-              height={988}
-              className="w-full object-contain"
-              priority
-            />
-          </Link>
-        </div>
+      {/* Banner Black Friday — faixa retangular acima dos produtos */}
+      <section className="bg-white">
+        <Link href="/catalogo" className="block w-full">
+          <Image
+            src="/marketing/black-friday-banner.jpg"
+            alt="Primeira Black Friday Mari Allves — novembro, até 50% de desconto e frete grátis para Barreiras"
+            width={1600}
+            height={600}
+            className="w-full object-cover"
+            sizes="100vw"
+            priority
+          />
+        </Link>
       </section>
 
       {/* Novidades */}
