@@ -14,6 +14,10 @@ export function ProductCard({ product }: ProductCardProps) {
     previousPriceCents != null && previousPriceCents > product.priceCents
   );
   const hasStock = product.variants.some((v) => v.active && v.stockQuantity > 0);
+  const discountPercent =
+    hasPromo && previousPriceCents
+      ? Math.round((1 - product.priceCents / previousPriceCents) * 100)
+      : 0;
 
   return (
     <article className="group border border-border rounded-xl p-4 hover:border-rosé-300 transition-colors bg-white">
@@ -33,8 +37,8 @@ export function ProductCard({ product }: ProductCardProps) {
             </div>
           )}
           {hasPromo && (
-            <span className="absolute top-2 left-2 bg-rosé-700 text-white text-xs font-bold px-2 py-1 rounded">
-              Promoção
+            <span className="absolute left-2 top-2 rounded-full border border-rosé-200 bg-rosé-100/95 px-1.5 py-0.5 text-[10px] font-semibold text-rosé-700 shadow-sm">
+              -{discountPercent}%
             </span>
           )}
         </div>
@@ -42,13 +46,19 @@ export function ProductCard({ product }: ProductCardProps) {
         <h3 className="font-semibold text-foreground line-clamp-1 mb-1">{product.name}</h3>
         <p className="text-xs text-muted-foreground mb-2">{product.category}</p>
 
-        <div className="flex items-baseline gap-2">
-          <span className="font-bold text-rosé-700">{formatPrice(product.priceCents)}</span>
+        <div className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-1">
           {hasPromo && previousPriceCents != null && (
             <span className="text-sm text-muted-foreground line-through">
               {formatPrice(previousPriceCents)}
             </span>
           )}
+          <span
+            className={`inline-block origin-left font-bold text-rosé-700 transition-all duration-200 group-hover:scale-105 group-hover:text-rosé-800 ${
+              hasPromo ? 'text-xl' : 'text-base'
+            }`}
+          >
+            {formatPrice(product.priceCents)}
+          </span>
         </div>
 
         {!hasStock ? (

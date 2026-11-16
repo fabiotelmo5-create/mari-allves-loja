@@ -20,6 +20,10 @@ export default async function ProductPage({
   const hasPromo = Boolean(
     product.previousPriceCents && product.previousPriceCents > product.priceCents
   );
+  const discountPercent =
+    hasPromo && product.previousPriceCents
+      ? Math.round((1 - product.priceCents / product.previousPriceCents) * 100)
+      : 0;
 
   return (
     <main className="flex-1">
@@ -52,15 +56,20 @@ export default async function ProductPage({
             </div>
 
             {/* Preço */}
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold text-rosé-700">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              {hasPromo && product.previousPriceCents && (
+                <>
+                  <span className="text-xl text-muted-foreground line-through">
+                    {formatPrice(product.previousPriceCents)}
+                  </span>
+                  <span className="rounded-full border border-rosé-200 bg-rosé-100 px-2 py-0.5 text-xs font-semibold text-rosé-700">
+                    -{discountPercent}%
+                  </span>
+                </>
+              )}
+              <span className={`font-bold text-rosé-700 ${hasPromo ? 'text-4xl' : 'text-3xl'}`}>
                 {formatPrice(product.priceCents)}
               </span>
-              {hasPromo && (
-                <span className="text-xl text-muted-foreground line-through">
-                  {formatPrice(product.previousPriceCents)}
-                </span>
-              )}
             </div>
 
             {/* Seleção de variação, quantidade e ações */}

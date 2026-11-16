@@ -205,8 +205,24 @@ export function ProductForm({ categories, initialValues = emptyValues, initialVa
         <p className="mt-1 text-xs text-muted-foreground">
           Rascunho fica só no painel. Publicado aparece na loja e precisa de foto.
         </p>
-        <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <Field label="Preço de venda" required help="Use o valor final que a cliente paga, com vírgula. Ex.: 129,90.">
+        <div className="mt-4 grid gap-4 md:grid-cols-3">
+          <Field
+            label="Preço completo"
+            help="Valor sem desconto. Preencha apenas se houver promoção. Ex.: 159,90."
+          >
+            <input
+              name="previousPrice"
+              inputMode="decimal"
+              defaultValue={initialValues.previousPrice}
+              className="input"
+              placeholder="Sem desconto"
+            />
+          </Field>
+          <Field
+            label="Preço com desconto"
+            required
+            help="Valor final que a cliente paga. Ex.: 129,90."
+          >
             <input
               name="price"
               inputMode="decimal"
@@ -225,6 +241,9 @@ export function ProductForm({ categories, initialValues = emptyValues, initialVa
             </select>
           </Field>
         </div>
+        <p className="mt-3 text-xs text-muted-foreground">
+          Para tirar o desconto de um produto existente, apague o campo “Preço completo” e salve.
+        </p>
       </section>
 
       <section className="rounded-xl border border-border bg-white p-5">
