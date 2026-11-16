@@ -1,6 +1,6 @@
-# Mari Allves — Moda Modesta
+# Mari Allves
 
-Loja virtual completa para a marca **Mari Allves — Moda Modesta** (moda modesta: blusas, saias, vestidos e acessórios).
+Loja virtual completa para a marca **Mari Allves** (moda evangélica: blusas, saias, vestidos e acessórios).
 
 > **Status:** Fase 0 — Planejamento. MVP em preparação.
 > **Escopo inicial:** Barreiras/BA e região. Expansão futura para outras cidades e para o Brasil.

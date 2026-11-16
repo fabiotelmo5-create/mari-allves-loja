@@ -1,4 +1,4 @@
-# WIREFRAMES (ASCII) — Mari Allves — Moda Modesta
+# WIREFRAMES (ASCII) — Mari Allves
 
 > Esboços de baixa fidelidade. Objetivo: validar fluxo e hierarquia antes do código.
 > Convenção: `[ ]` = botão/ação · `(x)` = campo · `[#]` = ícone · `···` = menu · `>` = navegação.
@@ -9,14 +9,14 @@
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│  MARI ALLVES — Moda Modesta   Buscar... [ (____________) [#] ]  (Conta) (♥) (🛒 2) │
+│  MARI ALLVES   Buscar... [ (____________) [#] ]  (Conta) (♥) (🛒 2) │
 ├──────────────────────────────────────────────────────────────────────────────┤
 │  ···  Início  Blusas  Saias  Vestidos  Acessórios  Novidades  Promoções  Contato ··· │
 ├──────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
 │  ┌────────────────────────────────────────────────────────────────────────┐  │
 │  │                        BANNER PRINCIPAL (administrável)                 │  │
-│  │           Coleção Moda Modesta — delicadeza que veste você             │  │
+│  │           Coleção Moda Evangélica — delicadeza que veste você             │  │
 │  │                        [ Ver coleção ]                                   │  │
 │  └────────────────────────────────────────────────────────────────────────┘  │
 │                                                                              │
@@ -51,7 +51,7 @@
 │  Trocas e devoluções  Guia de tamanhos    (11) 9...                          │
 │  Privacidade          Prazos de entrega   @mariallves                        │
 │  Termos de uso        Acessibilidade                                         │
-│  © 2026 Mari Allves — Moda Modesta. CNPJ: [a definir]                        │
+│  © 2026 Mari Allves. CNPJ: [a definir]                        │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 

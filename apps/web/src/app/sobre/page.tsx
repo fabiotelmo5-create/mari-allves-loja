@@ -6,9 +6,9 @@ export default function SobrePage() {
       <div className="max-w-3xl mx-auto px-4 py-12">
         <h1 className="text-3xl font-serif text-rosé-700 mb-6">Sobre a Mari Allves</h1>
         <p className="text-lg text-muted-foreground leading-relaxed mb-6">
-          A Mari Allves — Moda Modesta nasceu do desejo de oferecer roupas e
+          A Mari Allves nasceu do desejo de oferecer roupas e
           acessórios que aliem elegância, discrição e qualidade para mulheres
-          que valorizam a moda modesta no dia a dia e em ocasiões especiais.
+          que valorizam a moda evangélica no dia a dia e em ocasiões especiais.
         </p>
         <p className="text-lg text-muted-foreground leading-relaxed mb-6">
           Cada peça é selecionada com cuidado, pensando no conforto, no caimento

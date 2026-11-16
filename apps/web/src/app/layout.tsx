@@ -6,12 +6,12 @@ import { SiteChrome } from '@/components/site-chrome';
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
-  title: 'Mari Allves — Moda Modesta',
-  description: 'Roupas e acessórios de moda modesta. Blusas, saias, vestidos e acessórios com elegância e delicadeza.',
+  title: 'Mari Allves',
+  description: 'Roupas e acessórios de moda evangélica. Blusas, saias, vestidos e acessórios com elegância e delicadeza.',
   openGraph: {
-    siteName: 'Mari Allves — Moda Modesta',
-    title: 'Mari Allves — Moda Modesta',
-    description: 'Roupas e acessórios de moda modesta.',
+    siteName: 'Mari Allves',
+    title: 'Mari Allves',
+    description: 'Roupas e acessórios de moda evangélica.',
     locale: 'pt_BR',
     type: 'website',
   },

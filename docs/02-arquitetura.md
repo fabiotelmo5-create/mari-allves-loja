@@ -1,4 +1,4 @@
-# ARQUITETURA E DADOS — Mari Allves — Moda Modesta (MVP)
+# ARQUITETURA E DADOS — Mari Allves (MVP)
 
 ## 1. Visão geral
 

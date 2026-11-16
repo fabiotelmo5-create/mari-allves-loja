@@ -36,7 +36,7 @@ export function Footer() {
               />
             </Link>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Moda modesta com elegância, delicadeza e profissionalismo.
+              Moda evangélica com elegância, delicadeza e profissionalismo.
             </p>
           </div>
 
@@ -93,7 +93,7 @@ export function Footer() {
 
         <div className="border-t border-border pt-8">
           <p className="text-xs text-muted-foreground text-center">
-            Mari Allves — Moda Modesta. CNPJ a definir. Todos os direitos reservados.
+            Mari Allves. CNPJ a definir. Todos os direitos reservados.
           </p>
         </div>
       </div>

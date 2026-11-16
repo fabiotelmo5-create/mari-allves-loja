@@ -1,4 +1,4 @@
-# PLANO DE FASES, RISCOS E PENDÊNCIAS — Mari Allves — Moda Modesta
+# PLANO DE FASES, RISCOS E PENDÊNCIAS — Mari Allves
 
 ## 1. Decisões registradas (log de decisões)
 

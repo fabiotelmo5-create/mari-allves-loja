@@ -9,7 +9,7 @@ export default function AcessibilidadePage() {
           <section>
             <h2 className="text-lg font-serif text-rosé-700 mb-2">Nosso compromisso</h2>
             <p>
-              Buscamos tornar o site da Mari Allves — Moda Modesta acessível ao
+              Buscamos tornar o site da Mari Allves acessível ao
               maior número possível de pessoas, incluindo aquelas com deficiência.
             </p>
           </section>

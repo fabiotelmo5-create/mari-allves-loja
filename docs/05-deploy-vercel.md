@@ -1,4 +1,4 @@
-# DEPLOY NO VERCEL — Mari Allves — Moda Modesta
+# DEPLOY NO VERCEL — Mari Allves
 
 > Este guia coloca a loja virtual no ar **sem custo** no plano Hobby do Vercel.
 > Atenção: esta primeira versão usa **dados mockados**. O banco Supabase (produtos, carrinho, pagamentos reais) é conectado em uma etapa posterior.
@@ -60,7 +60,7 @@ No painel do Vercel, vá em **Project Settings → Environment Variables** e adi
 | Chave | Valor (desenvolvimento) | Produção |
 |-------|------------------------|----------|
 | `NEXT_PUBLIC_APP_URL` | `http://localhost:3000` | `https://seu-dominio.com.br` |
-| `NEXT_PUBLIC_APP_NAME` | Mari Allves — Moda Modesta | Mari Allves — Moda Modesta |
+| `NEXT_PUBLIC_APP_NAME` | Mari Allves | Mari Allves |
 | `NEXT_PUBLIC_SUPABASE_URL` | URL do projeto Supabase | URL do projeto Supabase |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | chave anon | chave anon |
 | `DATABASE_URL` | pooler 6543 | pooler 6543 |

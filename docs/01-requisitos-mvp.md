@@ -1,4 +1,4 @@
-# REQUISITOS ATÔMICOS — MVP — Mari Allves — Moda Modesta
+# REQUISITOS ATÔMICOS — MVP — Mari Allves
 
 > **Formato:** ID · Módulo · Descrição · Tipo · Prioridade · Ator · Entradas · Saídas · Regras · Validações · Exceções · Permissões · Eventos · Auditoria · Aceite (Gherkin) · LGPD.
 > **Tipo:** FUNC = funcional · DADO = dado · REGRA = regra de negócio · NFR = não funcional.

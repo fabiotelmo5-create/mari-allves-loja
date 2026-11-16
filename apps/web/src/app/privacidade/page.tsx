@@ -6,7 +6,7 @@ export default function PrivacidadePage() {
       <div className="max-w-3xl mx-auto px-4 py-12">
         <h1 className="text-3xl font-serif text-rosé-700 mb-8">Política de privacidade</h1>
         <p className="text-muted-foreground mb-6 leading-relaxed">
-          Esta política explica como a Mari Allves — Moda Modesta coleta, usa,
+          Esta política explica como a Mari Allves coleta, usa,
           armazena e protege seus dados pessoais, em conformidade com a Lei
           Geral de Proteção de Dados Pessoais (LGPD — Lei nº 13.709/2018).
         </p>

@@ -5,7 +5,7 @@ export default function TermosPage() {
         <h1 className="text-3xl font-serif text-rosé-700 mb-8">Termos de uso e condições de compra</h1>
         <p className="text-muted-foreground mb-6 leading-relaxed">
           Estes termos regulam o uso do site e as compras realizadas na loja
-          virtual Mari Allves — Moda Modesta.
+          virtual Mari Allves.
         </p>
         <div className="space-y-6 text-muted-foreground leading-relaxed">
           <p>
