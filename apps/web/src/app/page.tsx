@@ -113,7 +113,7 @@ export default async function Home() {
       <section className="bg-white">
         <Link href="/catalogo" className="block w-full">
           <Image
-            src="/marketing/black-friday-banner.jpg"
+            src="/marketing/black-friday-banner-v2.jpg"
             alt="Primeira Black Friday Mari Allves — novembro, até 50% de desconto e frete grátis para Barreiras"
             width={1600}
             height={600}
