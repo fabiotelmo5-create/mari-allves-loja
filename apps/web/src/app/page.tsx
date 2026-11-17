@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { Star, Truck, Tag, ShieldCheck } from 'lucide-react';
 import { ProductCard } from '@/components/product-card';
 import { getNewArrivals, getPromotions, listCategories } from '@/lib/catalog';
 import { getCategoryImage } from '@/lib/category-images';
@@ -36,25 +35,6 @@ export default async function Home() {
           <p className="font-serif text-3xl text-white drop-shadow-lg sm:text-4xl">
             Mari Allves
           </p>
-        </div>
-      </section>
-
-      {/* Benefícios */}
-      <section className="py-8 bg-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {[
-              { icon: Truck, label: 'Entrega em Barreiras e região' },
-              { icon: Tag, label: 'Preços justos e promoções reais' },
-              { icon: ShieldCheck, label: 'Compra segura e sigilosa' },
-              { icon: Star, label: 'Troca fácil dentro de 7 dias' },
-            ].map((benefit) => (
-              <div key={benefit.label} className="flex items-center gap-3 text-sm">
-                <benefit.icon className="h-5 w-5 text-rosé-700" />
-                <span className="text-muted-foreground">{benefit.label}</span>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 

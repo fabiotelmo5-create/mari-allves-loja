@@ -9,6 +9,7 @@ import {
   Menu,
   Package,
   Search,
+  ShieldCheck,
   ShoppingBag,
   Truck,
   User,
@@ -189,6 +190,9 @@ export function Navbar() {
             <span className="hidden sm:inline">Frete calculado pelo CEP no checkout</span>
             <span className="hidden text-white/60 md:inline">•</span>
             <span className="hidden md:inline">Pagamento no checkout</span>
+            <span className="hidden text-white/60 lg:inline">•</span>
+            <ShieldCheck className="hidden h-3.5 w-3.5 shrink-0 lg:block" aria-hidden="true" />
+            <span className="hidden lg:inline">Compra segura e sigilosa</span>
           </div>
         </div>
 
