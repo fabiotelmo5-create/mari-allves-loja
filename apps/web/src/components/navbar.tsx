@@ -26,6 +26,7 @@ const CATEGORY_LINKS = [
   { label: 'Acessórios', href: '/categoria/acessorios' },
   { label: 'Novidades', href: '/novidades' },
   { label: 'Promoções', href: '/promocoes' },
+  { label: 'Black Friday', href: '/black-friday' },
 ];
 
 const INSTITUTIONAL_LINKS = [

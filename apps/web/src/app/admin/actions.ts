@@ -152,6 +152,7 @@ export async function createProductAction(
   const priceCents = parseMoneyToCents(formData.get('price'));
   const previousPriceCents = parseOptionalMoneyToCents(formData.get('previousPrice'));
   const status = parseStatus(formData.get('status'));
+  const blackFriday = formData.get('blackFriday') === 'on';
   const parsedVariants = parseVariants(formData.get('variants'));
 
   if (name.length < 3) return { error: 'Informe o nome do produto.' };
@@ -214,6 +215,7 @@ export async function createProductAction(
           heightCm: heightCm ?? null,
           depthCm: depthCm ?? null,
           status,
+          blackFriday,
           publishedAt: status === 'PUBLICADO' ? new Date() : null,
         },
       });
@@ -286,6 +288,7 @@ export async function updateProductAction(
   const priceCents = parseMoneyToCents(formData.get('price'));
   const previousPriceCents = parseOptionalMoneyToCents(formData.get('previousPrice'));
   const status = parseStatus(formData.get('status'));
+  const blackFriday = formData.get('blackFriday') === 'on';
   const parsedVariants = parseVariants(formData.get('variants'));
 
   if (!id) return { error: 'Produto não encontrado.' };
@@ -396,6 +399,7 @@ export async function updateProductAction(
           heightCm: heightCm ?? null,
           depthCm: depthCm ?? null,
           status,
+          blackFriday,
           publishedAt: status === 'PUBLICADO' ? existing.publishedAt ?? new Date() : null,
         },
       });

@@ -74,6 +74,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
           depthCm: product.depthCm?.toString() ?? '',
           imageUrl: product.images[0]?.url ?? '',
           status: product.status,
+          blackFriday: product.blackFriday,
         }}
         initialVariants={product.variants.map((variant) => ({
           id: variant.id,

@@ -1,16 +1,17 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { ProductCard } from '@/components/product-card';
-import { getNewArrivals, getPromotions, listCategories } from '@/lib/catalog';
+import { getBlackFridayProducts, getNewArrivals, getPromotions, listCategories } from '@/lib/catalog';
 import { getCategoryImage } from '@/lib/category-images';
 
 // Revalida o catálogo a cada 60s (estoque/preços mudam pelo admin)
 export const revalidate = 60;
 
 export default async function Home() {
-  const [newArrivals, promotions, categories] = await Promise.all([
+  const [newArrivals, promotions, blackFridayProducts, categories] = await Promise.all([
     getNewArrivals(),
     getPromotions(),
+    getBlackFridayProducts(),
     listCategories(),
   ]);
 
@@ -90,6 +91,25 @@ export default async function Home() {
           />
         </Link>
       </section>
+
+      {/* Faixa Black Friday */}
+      {blackFridayProducts.length > 0 && (
+        <section className="py-12 bg-rosé-100/60">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-2xl font-serif text-rosé-700">Black Friday</h2>
+              <Link href="/black-friday" className="text-sm text-rosé-700 hover:underline">
+                Ver todos →
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+              {blackFridayProducts.slice(0, 4).map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Promoções */}
       {promotions.length > 0 && (

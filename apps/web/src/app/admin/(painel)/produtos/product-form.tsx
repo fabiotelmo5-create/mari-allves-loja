@@ -31,6 +31,7 @@ type Values = {
   depthCm: string;
   imageUrl: string;
   status: 'RASCUNHO' | 'PUBLICADO' | 'INATIVO' | 'ARQUIVADO';
+  blackFriday: boolean;
 };
 
 type Props = {
@@ -59,6 +60,7 @@ const emptyValues: Values = {
   depthCm: '',
   imageUrl: '',
   status: 'RASCUNHO',
+  blackFriday: false,
 };
 
 export function ProductForm({ categories, initialValues = emptyValues, initialVariants, action }: Props) {
@@ -244,6 +246,20 @@ export function ProductForm({ categories, initialValues = emptyValues, initialVa
         <p className="mt-3 text-xs text-muted-foreground">
           Para tirar o desconto de um produto existente, apague o campo “Preço completo” e salve.
         </p>
+        <label className="mt-4 flex items-start gap-2 text-sm text-foreground">
+          <input
+            type="checkbox"
+            name="blackFriday"
+            defaultChecked={initialValues.blackFriday}
+            className="mt-0.5 h-4 w-4 rounded border-border"
+          />
+          <span>
+            Incluir na Black Friday
+            <span className="block text-xs text-muted-foreground">
+              Produto aparece na faixa e na página Black Friday da loja.
+            </span>
+          </span>
+        </label>
       </section>
 
       <section className="rounded-xl border border-border bg-white p-5">

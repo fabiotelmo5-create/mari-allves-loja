@@ -250,3 +250,18 @@ export async function getPromotions(): Promise<Product[]> {
     .filter((row) => row.previousPriceCents != null && row.previousPriceCents > row.priceCents)
     .map(toProduct);
 }
+
+/** Seleção temporária da Black Friday (marcada no cadastro do produto). */
+export async function getBlackFridayProducts(): Promise<Product[]> {
+  if (!hasDatabase) {
+    return MOCK_PRODUCTS.filter((p) => p.status === 'PUBLICADO');
+  }
+
+  const rows = await prisma.product.findMany({
+    where: { status: 'PUBLICADO', blackFriday: true },
+    include: productInclude,
+    orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }],
+  });
+
+  return rows.map(toProduct);
+}
