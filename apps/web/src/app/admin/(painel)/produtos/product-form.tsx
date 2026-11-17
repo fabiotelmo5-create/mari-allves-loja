@@ -444,19 +444,6 @@ export function ProductForm({ categories, initialValues = emptyValues, initialVa
           >
             <input name="sku" defaultValue={initialValues.sku} className="input" placeholder="automático" />
           </Field>
-          <Field
-            label="Preço anterior"
-            help="Preencha só se o produto estava realmente mais caro antes. Não use preço inventado."
-            hint="Deixe em branco se não houver promoção real."
-          >
-            <input
-              name="previousPrice"
-              inputMode="decimal"
-              defaultValue={initialValues.previousPrice}
-              className="input"
-              placeholder="0,00"
-            />
-          </Field>
           <Field label="Composição" help="Ex.: 70% viscose, 30% linho. Ajuda a cliente a entender o tecido.">
             <input
               name="composition"
