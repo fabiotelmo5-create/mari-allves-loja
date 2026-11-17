@@ -15,4 +15,5 @@ fi
 
 echo "Planilha: $PLANILHA"
 python3 "$SKILL_DIR/scripts/parse_planilha.py" "$PLANILHA" /tmp/opencode/produtos.json
-node "$SKILL_DIR/scripts/importar.mjs" --json /tmp/opencode/produtos.json --dir imgs_prods/extraidas
+IMAGE_DIR="${1:-imgs_prods/extraidas}"
+node "$SKILL_DIR/scripts/importar.mjs" --json /tmp/opencode/produtos.json --dir "$IMAGE_DIR"

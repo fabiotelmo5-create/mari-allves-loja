@@ -38,7 +38,10 @@ const categorySlugs = {
   blusas: 'blusas', blusa: 'blusas',
   saias: 'saias', saia: 'saias',
   vestidos: 'vestidos', vestido: 'vestidos',
-  acessorios: 'acessorios', acessório: 'acessorios', acessorios: 'acessorios',
+  acessorios: 'acessorios', acessório: 'acessorios',
+  calcas: 'calcas', calças: 'calcas',
+  conjuntos: 'conjuntos', conjunto: 'conjuntos',
+  shorts: 'shorts', short: 'shorts',
 };
 
 const slugify = (value) => String(value ?? '')
@@ -48,6 +51,7 @@ const slugify = (value) => String(value ?? '')
 const images = (await readdir(imageDir))
   .filter((f) => /\.(jpe?g|png|webp)$/i.test(f))
   .sort();
+const imageByName = new Map(images.map((f) => [path.parse(f).name, f]));
 
 const p = new PrismaClient();
 const summary = [];
@@ -58,7 +62,12 @@ try {
     if (!name) continue;
 
     const numbers = (String(row.fotos ?? '').match(/\d+/g) ?? []).map(Number);
-    const files = numbers.map((n) => images[n - 1]).filter(Boolean);
+    const files = numbers
+      .map((n) => {
+        const byName = imageByName.get(String(n)) ?? imageByName.get(String(n).padStart(2, '0'));
+        return byName ?? images[n - 1];
+      })
+      .filter(Boolean);
     if (files.length === 0) throw new Error(`${name}: nenhuma foto encontrada (fotos=${row.fotos})`);
 
     const priceCents = Math.round(Number(String(row.preco ?? '').replace(',', '.')) * 100);
