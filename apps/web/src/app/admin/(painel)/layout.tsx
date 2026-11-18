@@ -31,7 +31,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const { user, admin } = await requireAdmin();
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-rosé-50/50">
       <header className="border-b border-border bg-white">
         <div className="flex h-14 items-center justify-between px-4 lg:px-6">
           <div className="flex items-center gap-3">

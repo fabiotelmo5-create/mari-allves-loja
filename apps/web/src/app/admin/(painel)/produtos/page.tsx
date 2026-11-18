@@ -16,7 +16,7 @@ const statusLabel = {
 } as const;
 
 const statusClass = {
-  RASCUNHO: 'bg-gray-100 text-gray-600',
+  RASCUNHO: 'bg-rosé-100 text-rosé-700',
   PUBLICADO: 'bg-emerald-50 text-emerald-700',
   INATIVO: 'bg-amber-50 text-amber-700',
   ARQUIVADO: 'bg-rosé-50 text-rosé-700',

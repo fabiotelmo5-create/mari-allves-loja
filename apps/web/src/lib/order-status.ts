@@ -27,7 +27,7 @@ export const ORDER_STATUS_BADGE_CLASSES: Record<OrderStatusValue, string> = {
   ENVIADO: 'bg-indigo-50 text-indigo-700',
   ENTREGUE: 'bg-emerald-50 text-emerald-700',
   CANCELADO: 'bg-red-50 text-red-700',
-  REEMBOLSADO: 'bg-gray-100 text-gray-600',
+  REEMBOLSADO: 'bg-rosé-100 text-rosé-700',
 };
 
 const TRANSITIONS: Record<OrderStatusValue, OrderStatusValue[]> = {

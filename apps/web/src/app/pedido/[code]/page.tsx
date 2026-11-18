@@ -53,7 +53,7 @@ const STATUS: Record<
   },
   REEMBOLSADO: {
     label: 'Reembolsado',
-    className: 'bg-gray-100 text-gray-600',
+    className: 'bg-rosé-100 text-rosé-700',
     icon: XCircle,
   },
 };

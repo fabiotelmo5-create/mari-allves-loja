@@ -48,7 +48,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
         <div className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-1">
           {hasPromo && previousPriceCents != null && (
-            <span className="inline-block origin-left text-sm text-muted-foreground line-through transition-all duration-200 group-hover:scale-95 group-hover:text-muted-foreground/70">
+            <span className="inline-block origin-left text-sm text-rosé-500/80 line-through transition-all duration-200 group-hover:scale-95 group-hover:text-rosé-400">
               {formatPrice(previousPriceCents)}
             </span>
           )}

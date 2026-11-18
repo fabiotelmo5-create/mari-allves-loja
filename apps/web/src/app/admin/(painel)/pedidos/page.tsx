@@ -85,7 +85,7 @@ export default async function AdminOrdersPage({
       ) : (
         <div className="overflow-x-auto rounded-xl border border-border bg-white">
           <table className="w-full min-w-[720px] text-sm">
-            <thead className="border-b border-border bg-gray-50/60 text-left text-xs uppercase tracking-wide text-muted-foreground">
+            <thead className="border-b border-border bg-rosé-50/60 text-left text-xs uppercase tracking-wide text-muted-foreground">
               <tr>
                 <th className="px-4 py-3 font-medium">Pedido</th>
                 <th className="px-4 py-3 font-medium">Cliente</th>
@@ -119,7 +119,7 @@ export default async function AdminOrdersPage({
                     <td className="px-4 py-3">
                       <span
                         className={`inline-block rounded-full px-2.5 py-1 text-xs font-medium ${
-                          ORDER_STATUS_BADGE_CLASSES[statusValue] ?? 'bg-gray-100 text-gray-600'
+                          ORDER_STATUS_BADGE_CLASSES[statusValue] ?? 'bg-rosé-100 text-rosé-700'
                         }`}
                       >
                         {ORDER_STATUS_LABELS[statusValue] ?? order.status}

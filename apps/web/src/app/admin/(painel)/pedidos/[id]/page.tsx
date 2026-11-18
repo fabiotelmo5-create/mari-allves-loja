@@ -89,7 +89,7 @@ export default async function AdminOrderPage({
           </div>
           <span
             className={`inline-flex rounded-full px-3 py-1 text-sm font-medium ${
-              ORDER_STATUS_BADGE_CLASSES[status] ?? 'bg-gray-100 text-gray-600'
+              ORDER_STATUS_BADGE_CLASSES[status] ?? 'bg-rosé-100 text-rosé-700'
             }`}
           >
             {ORDER_STATUS_LABELS[status] ?? order.status}
@@ -183,7 +183,7 @@ export default async function AdminOrderPage({
                         {paymentProviderLabel(payment.provider)} ·{' '}
                         {paymentMethodLabel(payment.method)}
                       </span>
-                      <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
+                      <span className="rounded-full bg-rosé-100 px-2 py-0.5 text-xs font-medium text-rosé-700">
                         {PAYMENT_STATUS_LABELS[payment.status] ?? payment.status}
                       </span>
                     </div>

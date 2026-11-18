@@ -83,10 +83,6 @@
     background-color: hsl(var(--card));
   }
 
-  .dark .bg-gray-50 {
-    background-color: hsl(var(--background));
-  }
-
   .dark .bg-rosé-50,
   .dark .bg-rosé-50\/30,
   .dark .bg-rosé-50\/50,

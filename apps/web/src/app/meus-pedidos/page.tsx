@@ -81,7 +81,7 @@ export default async function MeusPedidosPage() {
                   <div className="flex flex-shrink-0 items-center gap-3">
                     <span
                       className={`rounded-full px-2.5 py-1 text-xs font-medium ${
-                        ORDER_STATUS_BADGE_CLASSES[status] ?? 'bg-gray-100 text-gray-600'
+                        ORDER_STATUS_BADGE_CLASSES[status] ?? 'bg-rosé-100 text-rosé-700'
                       }`}
                     >
                       {ORDER_STATUS_LABELS[status] ?? order.status}
