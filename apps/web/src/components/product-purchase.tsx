@@ -79,7 +79,7 @@ export function ProductPurchase({ product }: { product: Product }) {
       {/* Variações */}
       <div className="space-y-4">
         <h3 className="text-sm font-semibold text-foreground">Tamanho e cor</h3>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="flex flex-wrap gap-2">
           {product.variants.map((v) => {
             const available = v.active && v.stockQuantity > 0;
             const isSelected = selectedVariant?.id === v.id;
@@ -89,7 +89,7 @@ export function ProductPurchase({ product }: { product: Product }) {
                 type="button"
                 onClick={() => selectVariant(v)}
                 aria-pressed={isSelected}
-                className={`aspect-square border rounded-lg flex flex-col items-center justify-center gap-1 text-xs transition-colors ${
+                className={`inline-flex min-w-[72px] items-center justify-center gap-1 rounded-full border px-3 py-1.5 text-xs transition-colors ${
                   !available
                     ? 'border-dashed border-rosé-200 text-rosé-300 cursor-not-allowed'
                     : isSelected
@@ -99,7 +99,7 @@ export function ProductPurchase({ product }: { product: Product }) {
                 disabled={!available}
               >
                 {v.size} · {v.color}
-                {!available && <span className="text-[10px] mt-0.5">Sem estoque</span>}
+                {!available && <span className="text-[10px] opacity-80">Sem estoque</span>}
               </button>
             );
           })}

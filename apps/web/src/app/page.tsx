@@ -56,7 +56,7 @@ export default async function Home() {
                 <Link
                   key={cat.slug}
                   href={`/categoria/${cat.slug}`}
-                  className="group relative block aspect-square overflow-hidden rounded-2xl border border-border bg-rosé-50 transition-colors hover:border-rosé-300"
+                  className="group relative mx-auto block aspect-[4/3] w-full max-w-[260px] overflow-hidden rounded-3xl border border-border bg-rosé-50 transition-colors hover:border-rosé-300"
                 >
                   <Image
                     src={image}
@@ -67,7 +67,7 @@ export default async function Home() {
                     unoptimized={image.endsWith('.svg')}
                   />
                   <span className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/5 to-transparent" />
-                  <span className="absolute bottom-4 left-4 right-4 text-base font-medium text-white drop-shadow">
+                  <span className="absolute bottom-3 left-3 right-3 text-sm font-medium text-white drop-shadow">
                     {cat.name}
                   </span>
                 </Link>
