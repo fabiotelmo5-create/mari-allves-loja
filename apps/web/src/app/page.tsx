@@ -48,7 +48,7 @@ export default async function Home() {
               Ver todas →
             </Link>
           </div>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
             {categories.map((cat) => {
               const image = getCategoryImage(cat.imageUrl, cat.slug);
 
@@ -56,7 +56,7 @@ export default async function Home() {
                 <Link
                   key={cat.slug}
                   href={`/categoria/${cat.slug}`}
-                  className="group relative block aspect-[4/5] overflow-hidden rounded-xl border border-border bg-rosé-50 transition-colors hover:border-rosé-300"
+                  className="group relative block aspect-square overflow-hidden rounded-2xl border border-border bg-rosé-50 transition-colors hover:border-rosé-300"
                 >
                   <Image
                     src={image}
@@ -81,7 +81,7 @@ export default async function Home() {
       <section className="bg-white">
         <Link href="/catalogo" className="block w-full">
           <Image
-            src="/marketing/black-friday-banner-v2.jpg"
+            src="/marketing/black-friday-banner-v3.jpg"
             alt="Primeira Black Friday Mari Allves — novembro, até 50% de desconto e frete grátis para Barreiras"
             width={1600}
             height={600}

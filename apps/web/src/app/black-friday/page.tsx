@@ -22,7 +22,7 @@ export default async function BlackFridayPage() {
 
         <div className="mb-8 overflow-hidden rounded-2xl">
           <Image
-            src="/marketing/black-friday-banner-v2.jpg"
+            src="/marketing/black-friday-banner-v3.jpg"
             alt="Black Friday Mari Allves"
             width={1600}
             height={600}

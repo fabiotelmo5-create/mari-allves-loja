@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { Mail, Clock, MapPin } from 'lucide-react';
+import { Instagram, Mail, Clock, MapPin, Phone } from 'lucide-react';
 
 const INSTITUTIONAL_LINKS = [
   { label: 'Sobre a Mari Allves', href: '/sobre' },
@@ -76,8 +76,20 @@ export function Footer() {
             <h3 className="text-sm font-semibold text-rosé-700 mb-4">Atendimento</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li className="flex items-start gap-2">
+                <Phone className="h-4 w-4 mt-0.5 text-rosé-400" />
+                <a href="https://wa.me/5577999671649" target="_blank" rel="noopener noreferrer" className="hover:text-rosé-700 hover:underline">
+                  (77) 99996-71649
+                </a>
+              </li>
+              <li className="flex items-start gap-2">
+                <Instagram className="h-4 w-4 mt-0.5 text-rosé-400" />
+                <a href="https://instagram.com/mariallves432" target="_blank" rel="noopener noreferrer" className="hover:text-rosé-700 hover:underline">
+                  @mariallves432
+                </a>
+              </li>
+              <li className="flex items-start gap-2">
                 <Mail className="h-4 w-4 mt-0.5 text-rosé-400" />
-                <span>E-mail e WhatsApp serão publicados em breve.</span>
+                <span>E-mail: a definir.</span>
               </li>
               <li className="flex items-start gap-2">
                 <Clock className="h-4 w-4 mt-0.5 text-rosé-400" />

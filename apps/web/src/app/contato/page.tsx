@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Mail, Phone, MapPin, Clock, Package } from 'lucide-react';
+import { Instagram, Mail, Phone, MapPin, Clock, Package } from 'lucide-react';
 
 export default function ContatoPage() {
   return (
@@ -25,7 +25,28 @@ export default function ContatoPage() {
                 <Phone className="h-5 w-5 mt-0.5 text-rosé-700" />
                 <div>
                   <p className="font-medium">Telefone/WhatsApp</p>
-                  <p className="text-muted-foreground">A definir</p>
+                  <a
+                    href="https://wa.me/5577999671649"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-rosé-700 hover:underline"
+                  >
+                    (77) 99996-71649
+                  </a>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <Instagram className="h-5 w-5 mt-0.5 text-rosé-700" />
+                <div>
+                  <p className="font-medium">Instagram</p>
+                  <a
+                    href="https://instagram.com/mariallves432"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-rosé-700 hover:underline"
+                  >
+                    @mariallves432
+                  </a>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -100,12 +121,12 @@ export default function ContatoPage() {
 
             <div className="bg-rosé-50/60 p-6 rounded-xl border border-rosé-100">
               <h3 className="text-sm font-semibold text-rosé-700 mb-2">
-                Canais oficiais em configuração
+                Canais oficiais
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                O e-mail, o WhatsApp e o endereço completo da loja serão
-                publicados aqui assim que forem definidos. Nenhum dado de
-                contato provisório é exibido para não induzir a erro.
+                Fale com a gente pelo WhatsApp (77) 99996-71649 ou pelo Instagram
+                @mariallves432. O e-mail e o endereço completo serão publicados
+                assim que forem definidos.
               </p>
             </div>
           </div>
