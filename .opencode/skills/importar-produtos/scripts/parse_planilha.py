@@ -14,7 +14,7 @@ NS = {
     "text": "urn:oasis:names:tc:opendocument:xmlns:text:1.0",
     "office": "urn:oasis:names:tc:opendocument:xmlns:office:1.0",
 }
-COLUMNS = ["fotos", "categoria", "nome", "preco", "tamanhos", "cores", "descricao"]
+COLUMNS = ["fotos", "categoria", "nome", "preco", "precoOriginal", "tamanhos", "cores", "descricao"]
 
 
 def ods_rows(path):
@@ -55,7 +55,12 @@ def csv_rows(path):
 
 
 def normalize_price(value):
-    value = str(value or "").strip().replace("R$", "").replace(" ", "")
+    raw = str(value or "").strip()
+    # "319,80 (promoção: 255,80)" -> preço promocional 255,80
+    match = re.search(r"promo(?:ç|c)[aã]o\s*:\s*([\d.,]+)", raw, re.IGNORECASE)
+    if match:
+        raw = match.group(1)
+    value = raw.replace("R$", "").replace(" ", "")
     if "," in value and "." in value:
         value = value.replace(".", "").replace(",", ".")
     else:
@@ -74,13 +79,13 @@ def main():
         sys.exit(1)
 
     header = [str(h).strip().lower() for h in rows[0]]
-    index = {name: header.index(name) for name in COLUMNS if name in header}
+    index = {name.lower(): header.index(name.lower()) for name in COLUMNS if name.lower() in header}
     if "nome" not in index:
         print("coluna 'nome' não encontrada", file=sys.stderr)
         sys.exit(1)
 
     def get(row, key):
-        i = index.get(key)
+        i = index.get(key.lower())
         return str(row[i]).strip() if i is not None and i < len(row) else ""
 
     products = []
@@ -92,6 +97,7 @@ def main():
             "categoria": get(row, "categoria"),
             "nome": get(row, "nome"),
             "preco": normalize_price(get(row, "preco")),
+            "precoOriginal": normalize_price(get(row, "precoOriginal")),
             "tamanhos": get(row, "tamanhos"),
             "cores": get(row, "cores"),
             "descricao": get(row, "descricao") or None,

@@ -82,6 +82,10 @@ try {
     const slug = slugify(name);
     const sku = `${slug}-${slugify(size)}-${slugify(color)}`.toUpperCase();
     const description = row.descricao ? String(row.descricao).trim() : null;
+    const originalPrice = String(row.precoOriginal ?? "").trim();
+    const previousPriceCents = originalPrice
+      ? Math.round(Number(originalPrice.replace(',', '.')) * 100)
+      : null;
 
     const bySku = await p.product.findUnique({ where: { sku } });
     let existing = await p.product.findUnique({ where: { slug } });
@@ -113,6 +117,7 @@ try {
           where: { id: productId },
           data: {
             sku, name, slug, description, priceCents,
+            previousPriceCents: previousPriceCents && previousPriceCents > priceCents ? previousPriceCents : null,
             categoryId: category.id, status: 'PUBLICADO', publishedAt: new Date(),
           },
         });
@@ -125,6 +130,7 @@ try {
         const created = await tx.product.create({
           data: {
             sku, name, slug, description, priceCents,
+            previousPriceCents: previousPriceCents && previousPriceCents > priceCents ? previousPriceCents : null,
             categoryId: category.id, status: 'PUBLICADO', publishedAt: new Date(),
           },
         });
