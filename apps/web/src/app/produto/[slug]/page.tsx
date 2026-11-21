@@ -24,6 +24,13 @@ export default async function ProductPage({
     hasPromo && product.previousPriceCents
       ? Math.round((1 - product.priceCents / product.previousPriceCents) * 100)
       : 0;
+  const descriptionLines = (product.description || '').split('\n');
+  const details = descriptionLines[0]?.startsWith('Detalhes:')
+    ? descriptionLines[0].replace(/^Detalhes:\s*/, '')
+    : '';
+  const fullDescription = (details ? descriptionLines.slice(1) : descriptionLines)
+    .join('\n')
+    .trim();
 
   return (
     <main className="flex-1">
@@ -52,6 +59,9 @@ export default async function ProductPage({
                 {product.category}
               </span>
               <h1 className="text-3xl font-serif text-rosé-700 mb-2">{product.name}</h1>
+              {details && (
+                <p className="mt-1 text-sm text-muted-foreground">{details}</p>
+              )}
             </div>
 
             {/* Preço */}
@@ -79,7 +89,9 @@ export default async function ProductPage({
           <div className="lg:col-span-2 space-y-6">
             <div className="border border-border rounded-xl p-6 bg-white">
               <h3 className="text-sm font-semibold text-rosé-700 mb-4">Descrição</h3>
-              <p className="text-muted-foreground leading-relaxed">{product.description}</p>
+              <p className="text-muted-foreground leading-relaxed">
+                {fullDescription || 'Descrição em breve.'}
+              </p>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-sm">
