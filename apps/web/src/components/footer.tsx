@@ -89,7 +89,12 @@ export function Footer() {
               </li>
               <li className="flex items-start gap-2">
                 <Mail className="h-4 w-4 mt-0.5 text-rosé-400" />
-                <span>E-mail: a definir.</span>
+                <a
+                  href="mailto:mariallves432@gmail.com"
+                  className="hover:text-rosé-700 hover:underline"
+                >
+                  mariallves432@gmail.com
+                </a>
               </li>
               <li className="flex items-start gap-2">
                 <Clock className="h-4 w-4 mt-0.5 text-rosé-400" />
@@ -105,7 +110,7 @@ export function Footer() {
 
         <div className="border-t border-border pt-8">
           <p className="text-xs text-muted-foreground text-center">
-            Mari Allves. CNPJ a definir. Todos os direitos reservados.
+            Mari Allves. Todos os direitos reservados.
           </p>
         </div>
       </div>

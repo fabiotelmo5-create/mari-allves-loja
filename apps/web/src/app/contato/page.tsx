@@ -18,7 +18,12 @@ export default function ContatoPage() {
                 <Mail className="h-5 w-5 mt-0.5 text-rosé-700" />
                 <div>
                   <p className="font-medium">E-mail</p>
-                  <p className="text-muted-foreground">A definir</p>
+                  <a
+                    href="mailto:mariallves432@gmail.com"
+                    className="text-rosé-700 hover:underline"
+                  >
+                    mariallves432@gmail.com
+                  </a>
                 </div>
               </div>
               <div className="flex items-start gap-3">

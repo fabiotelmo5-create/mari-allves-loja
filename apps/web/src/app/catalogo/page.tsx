@@ -20,7 +20,7 @@ export default async function CatalogoPage() {
           <span className="text-foreground">Catálogo</span>
         </nav>
         <h1 className="text-3xl font-serif text-rosé-700 mb-8">Catálogo</h1>
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
           {categories.map((cat) => {
             const image = getCategoryImage(cat.imageUrl, cat.slug);
 
@@ -28,7 +28,7 @@ export default async function CatalogoPage() {
               <Link
                 key={cat.slug}
                 href={`/categoria/${cat.slug}`}
-                className="group relative block aspect-[4/5] overflow-hidden rounded-xl border border-border bg-rosé-50 transition-colors hover:border-rosé-300"
+                className="group relative mx-auto block aspect-square w-full max-w-[200px] overflow-hidden rounded-full border border-border bg-rosé-50 transition-colors hover:border-rosé-300"
               >
                 <Image
                   src={image}
@@ -38,8 +38,8 @@ export default async function CatalogoPage() {
                   sizes="(max-width: 640px) 50vw, 25vw"
                   unoptimized={image.endsWith('.svg')}
                 />
-                <span className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/5 to-transparent" />
-                <span className="absolute bottom-4 left-4 right-4 text-base font-medium text-white drop-shadow">
+                <span className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/20 to-black/10" />
+                <span className="absolute inset-0 flex items-center justify-center px-3 text-center text-sm font-medium text-white drop-shadow">
                   {cat.name}
                 </span>
               </Link>
