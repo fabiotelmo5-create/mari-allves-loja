@@ -48,7 +48,7 @@ export default async function Home() {
               Ver todas →
             </Link>
           </div>
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
             {categories.map((cat) => {
               const image = getCategoryImage(cat.imageUrl, cat.slug);
 
