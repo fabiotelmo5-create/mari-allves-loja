@@ -32,11 +32,6 @@ export default async function Home() {
           Seu navegador não suporta vídeo.
         </video>
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-black/20" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 px-4 pb-10 text-center">
-          <p className="font-serif text-3xl text-white drop-shadow-lg sm:text-4xl">
-            Mari Allves
-          </p>
-        </div>
       </section>
 
       {/* Categorias em destaque */}
