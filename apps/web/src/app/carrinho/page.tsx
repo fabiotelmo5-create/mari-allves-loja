@@ -140,9 +140,6 @@ export default function CartPage() {
           >
             {product?.name ?? item.productSlug} ({item.size} / {item.color})
           </Link>
-          <p className="text-xs text-muted-foreground mt-1">
-            SKU: {variant?.sku ?? product?.sku ?? '—'}
-          </p>
           {unavailable && (
             <p className="text-xs text-red-600 mt-1">
               Indisponível no momento — remova para continuar.

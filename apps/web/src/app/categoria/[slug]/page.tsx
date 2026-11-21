@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ProductCard } from '@/components/product-card';
-import { Button } from '@/components/button';
+import { CategoryFilters } from '@/components/category-filters';
 import { getCategoryBySlug, getProductsByCategory } from '@/lib/catalog';
 
 export const revalidate = 60;
@@ -95,83 +95,15 @@ export default async function CategoryPage({
 
         <div className="flex flex-col lg:flex-row gap-6">
           <aside className="lg:w-1/4 space-y-6">
-            <form method="get" className="space-y-6 rounded-xl border border-border bg-white p-4">
-              <div className="space-y-3">
-                <h3 className="text-sm font-semibold text-rosé-700">Categoria</h3>
-                <p className="text-sm text-muted-foreground">{category.name}</p>
-              </div>
-
-              <div className="space-y-3">
-                <h3 className="text-sm font-semibold text-rosé-700">Tamanho</h3>
-                <div className="flex flex-wrap gap-2">
-                  {SIZES.map((value) => (
-                    <label
-                      key={value}
-                      className={
-                        selectedSize === value
-                          ? 'cursor-pointer rounded-lg border border-rosé-700 bg-rosé-50 px-3 py-1.5 text-sm text-rosé-700'
-                          : 'cursor-pointer rounded-lg border border-input px-3 py-1.5 text-sm text-muted-foreground hover:border-rosé-300'
-                      }
-                    >
-                      <input
-                        type="radio"
-                        name="size"
-                        value={value}
-                        defaultChecked={selectedSize === value}
-                        className="sr-only"
-                      />
-                      {value}
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <h3 className="text-sm font-semibold text-rosé-700">Preço (R$)</h3>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    name="min"
-                    inputMode="decimal"
-                    defaultValue={min ?? ''}
-                    placeholder="Mín."
-                    className="w-20 border border-input rounded-lg px-2 py-1.5 text-sm"
-                  />
-                  <span className="text-sm text-muted-foreground">a</span>
-                  <input
-                    type="text"
-                    name="max"
-                    inputMode="decimal"
-                    defaultValue={max ?? ''}
-                    placeholder="Máx."
-                    className="w-20 border border-input rounded-lg px-2 py-1.5 text-sm"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <h3 className="text-sm font-semibold text-rosé-700">Ordenar por</h3>
-                <select
-                  name="sort"
-                  defaultValue={sort ?? 'relevance'}
-                  className="w-full border border-input rounded-lg px-2 py-1.5 text-sm bg-white"
-                >
-                  <option value="relevance">Relevância</option>
-                  <option value="price-asc">Menor preço</option>
-                  <option value="price-desc">Maior preço</option>
-                  <option value="newest">Data de cadastro</option>
-                </select>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                <Button type="submit" size="sm">Aplicar filtros</Button>
-                {hasFilters && (
-                  <Button asChild variant="ghost" size="sm">
-                    <Link href={`/categoria/${category.slug}`}>Limpar</Link>
-                  </Button>
-                )}
-              </div>
-            </form>
+            <CategoryFilters
+              categoryName={category.name}
+              categorySlug={category.slug}
+              selectedSize={selectedSize}
+              min={min ?? ''}
+              max={max ?? ''}
+              sort={sort ?? 'relevance'}
+              hasFilters={hasFilters}
+            />
           </aside>
 
           <section className="flex-1">

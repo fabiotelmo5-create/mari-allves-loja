@@ -52,7 +52,6 @@ export default async function ProductPage({
                 {product.category}
               </span>
               <h1 className="text-3xl font-serif text-rosé-700 mb-2">{product.name}</h1>
-              <p className="text-sm text-muted-foreground">SKU: {product.sku}</p>
             </div>
 
             {/* Preço */}
