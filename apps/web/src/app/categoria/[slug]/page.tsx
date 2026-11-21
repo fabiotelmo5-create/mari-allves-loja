@@ -30,10 +30,11 @@ export default async function CategoryPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ size?: string; min?: string; max?: string; sort?: string }>;
+  searchParams: Promise<{ size?: string; min?: string; max?: string; sort?: string; q?: string }>;
 }) {
   const { slug } = await params;
-  const { size, min, max, sort } = await searchParams;
+  const { size, min, max, sort, q } = await searchParams;
+  const term = (q ?? '').trim().toLowerCase();
 
   const [category, allProducts] = await Promise.all([
     getCategoryBySlug(slug),
@@ -46,7 +47,9 @@ export default async function CategoryPage({
   const minCents = parsePriceToCents(min);
   const maxCents = parsePriceToCents(max);
 
-  let products = allProducts;
+  let products = term
+    ? allProducts.filter((p) => p.name.toLowerCase().includes(term))
+    : allProducts;
 
   if (selectedSize) {
     products = products.filter((product) =>
@@ -76,7 +79,8 @@ export default async function CategoryPage({
   }
 
   const hasFilters = Boolean(
-    selectedSize ||
+    Boolean(term) ||
+      selectedSize ||
       minCents !== null ||
       maxCents !== null ||
       (sort && sort !== 'relevance')
@@ -103,6 +107,7 @@ export default async function CategoryPage({
               max={max ?? ''}
               sort={sort ?? 'relevance'}
               hasFilters={hasFilters}
+              q={q ?? ''}
             />
           </aside>
 

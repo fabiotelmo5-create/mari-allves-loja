@@ -7,22 +7,26 @@ import { Button } from '@/components/button';
 const SIZES = ['P', 'M', 'G', 'GG'];
 
 type Props = {
-  categoryName: string;
-  categorySlug: string;
+  categoryName?: string | null;
+  categorySlug?: string;
+  basePath?: string;
   selectedSize: string | null;
   min: string;
   max: string;
   sort: string;
+  q: string;
   hasFilters: boolean;
 };
 
 export function CategoryFilters({
   categoryName,
   categorySlug,
+  basePath,
   selectedSize,
   min,
   max,
   sort,
+  q,
   hasFilters,
 }: Props) {
   const router = useRouter();
@@ -39,6 +43,7 @@ export function CategoryFilters({
     if (min) params.set('min', min);
     if (max) params.set('max', max);
     if (sort && sort !== 'relevance') params.set('sort', sort);
+    if (q) params.set('q', q);
 
     const query = params.toString();
     startTransition(() => {
@@ -46,12 +51,16 @@ export function CategoryFilters({
     });
   }
 
+  const clearPath = basePath ?? (categorySlug ? `/categoria/${categorySlug}` : '/produtos');
+
   return (
     <form method="get" className="space-y-6 rounded-xl border border-border bg-white p-4">
-      <div className="space-y-3">
-        <h3 className="text-sm font-semibold text-rosé-700">Categoria</h3>
-        <p className="text-sm text-muted-foreground">{categoryName}</p>
-      </div>
+      {categoryName && (
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold text-rosé-700">Categoria</h3>
+          <p className="text-sm text-muted-foreground">{categoryName}</p>
+        </div>
+      )}
 
       <div className="space-y-3">
         <h3 className="text-sm font-semibold text-rosé-700">Tamanho</h3>
@@ -77,6 +86,17 @@ export function CategoryFilters({
           })}
         </div>
         <input type="hidden" name="size" value={size ?? ''} />
+      </div>
+
+      <div className="space-y-3">
+        <h3 className="text-sm font-semibold text-rosé-700">Buscar produto</h3>
+        <input
+          type="search"
+          name="q"
+          defaultValue={q}
+          placeholder="Ex.: vestido jeans"
+          className="w-full rounded-lg border border-input px-3 py-2 text-sm"
+        />
       </div>
 
       <div className="space-y-3">
@@ -122,7 +142,7 @@ export function CategoryFilters({
         </Button>
         {hasFilters && (
           <Button asChild variant="ghost" size="sm">
-            <a href={`/categoria/${categorySlug}`}>Limpar</a>
+            <a href={clearPath}>Limpar</a>
           </Button>
         )}
       </div>

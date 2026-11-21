@@ -24,6 +24,7 @@ const CATEGORY_LINKS = [
   { label: 'Blusas', href: '/categoria/blusas' },
   { label: 'Vestidos', href: '/categoria/vestidos' },
   { label: 'Acessórios', href: '/categoria/acessorios' },
+  { label: 'Todos os produtos', href: '/produtos' },
   { label: 'Novidades', href: '/novidades' },
   { label: 'Promoções', href: '/promocoes' },
   { label: 'Black Friday', href: '/black-friday' },
