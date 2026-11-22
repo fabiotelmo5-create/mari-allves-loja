@@ -10,6 +10,50 @@ function categoryRedirect(params: string): never {
   redirect(`/admin/categorias?${params}`);
 }
 
+export async function setCategoryActiveAction(formData: FormData) {
+  const { admin } = await requireAdmin();
+  const id = String(formData.get('id') ?? '').trim();
+  const active = formData.get('active') === 'true';
+
+  if (!id) categoryRedirect(`erro=${encodeURIComponent('Categoria não encontrada.')}`);
+
+  const category = await prisma.category.findUnique({
+    where: { id },
+    select: { id: true, slug: true, active: true },
+  });
+  if (!category) categoryRedirect(`erro=${encodeURIComponent('Categoria não encontrada.')}`);
+
+  if (!active) {
+    const inUse = await prisma.product.count({
+      where: { categoryId: id, status: 'PUBLICADO' },
+    });
+    if (inUse > 0) {
+      categoryRedirect(`erro=${encodeURIComponent(`A categoria ainda tem ${inUse} produto(s) publicado(s). Mova ou remova os produtos antes de desativar.`)}`);
+    }
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.category.update({ where: { id }, data: { active } });
+    await tx.auditLog.create({
+      data: {
+        tableName: 'Category',
+        recordId: id,
+        action: 'UPDATE',
+        changedBy: admin.userId,
+        oldData: { active: category.active },
+        newData: { active },
+      },
+    });
+  });
+
+  revalidatePath('/');
+  revalidatePath('/catalogo');
+  revalidatePath('/admin/categorias');
+  if (category.slug) revalidatePath(`/categoria/${category.slug}`);
+
+  categoryRedirect(active ? 'reativada=1' : 'desativada=1');
+}
+
 export async function updateCategoryImageAction(formData: FormData) {
   const { admin } = await requireAdmin();
   const id = String(formData.get('id') ?? '').trim();

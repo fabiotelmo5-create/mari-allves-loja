@@ -4,7 +4,7 @@ import { AlertCircle, CheckCircle2, ExternalLink, Image as ImageIcon, Upload } f
 import { prisma } from '@mari-allves/db';
 import { requireAdmin } from '@/lib/auth';
 import { getCategoryImage } from '@/lib/category-images';
-import { updateCategoryImageAction } from '@/app/admin/category-actions';
+import { setCategoryActiveAction, updateCategoryImageAction } from '@/app/admin/category-actions';
 
 export const metadata = { title: 'Imagens de categorias — Painel Mari Allves' };
 export const dynamic = 'force-dynamic';
@@ -12,14 +12,14 @@ export const dynamic = 'force-dynamic';
 export default async function AdminCategoriesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ salvo?: string; erro?: string }>;
+  searchParams: Promise<{ salvo?: string; erro?: string; desativada?: string; reativada?: string }>;
 }) {
   await requireAdmin();
-  const { salvo, erro } = await searchParams;
+  const { salvo, erro, desativada, reativada } = await searchParams;
 
   const categories = await prisma.category.findMany({
     orderBy: [{ position: 'asc' }, { name: 'asc' }],
-    select: { id: true, name: true, slug: true, imageUrl: true },
+    select: { id: true, name: true, slug: true, imageUrl: true, active: true },
   });
 
   return (
@@ -35,6 +35,20 @@ export default async function AdminCategoriesPage({
         <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
           <CheckCircle2 className="h-4 w-4" />
           Imagem atualizada.
+        </div>
+      )}
+
+      {desativada && (
+        <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+          <AlertCircle className="h-4 w-4" />
+          Categoria desativada. Ela não aparece mais na loja.
+        </div>
+      )}
+
+      {reativada && (
+        <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+          <CheckCircle2 className="h-4 w-4" />
+          Categoria reativada.
         </div>
       )}
 
@@ -56,13 +70,29 @@ export default async function AdminCategoriesPage({
                   <h2 className="font-medium text-foreground">{category.name}</h2>
                   <p className="text-xs text-muted-foreground">/categoria/{category.slug}</p>
                 </div>
-                <Link
-                  href={`/categoria/${category.slug}`}
-                  target="_blank"
-                  className="inline-flex items-center gap-1 text-xs text-rosé-700 hover:underline"
-                >
-                  Ver página <ExternalLink className="h-3.5 w-3.5" />
-                </Link>
+                <div className="flex flex-col items-end gap-2">
+                  <Link
+                    href={`/categoria/${category.slug}`}
+                    target="_blank"
+                    className="inline-flex items-center gap-1 text-xs text-rosé-700 hover:underline"
+                  >
+                    Ver página <ExternalLink className="h-3.5 w-3.5" />
+                  </Link>
+                  <form action={setCategoryActiveAction}>
+                    <input type="hidden" name="id" value={category.id} />
+                    <input type="hidden" name="active" value={category.active ? 'false' : 'true'} />
+                    <button
+                      type="submit"
+                      className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${
+                        category.active
+                          ? 'bg-amber-50 text-amber-700 hover:bg-amber-100'
+                          : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                      }`}
+                    >
+                      {category.active ? 'Desativar' : 'Reativar'}
+                    </button>
+                  </form>
+                </div>
               </div>
 
               <div className="mt-4 flex flex-col gap-4 sm:flex-row">
