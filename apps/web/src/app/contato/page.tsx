@@ -36,7 +36,7 @@ export default function ContatoPage() {
                     rel="noopener noreferrer"
                     className="text-rosé-700 hover:underline"
                   >
-                    (77) 99996-71649
+                    (77) 9996-71649
                   </a>
                 </div>
               </div>
@@ -129,7 +129,7 @@ export default function ContatoPage() {
                 Canais oficiais
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Fale com a gente pelo WhatsApp (77) 99996-71649 ou pelo Instagram
+                Fale com a gente pelo WhatsApp (77) 9996-71649 ou pelo Instagram
                 @mariallves432. O e-mail e o endereço completo serão publicados
                 assim que forem definidos.
               </p>

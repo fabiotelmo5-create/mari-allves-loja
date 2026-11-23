@@ -378,7 +378,7 @@ export function Navbar() {
               <div className="rounded-xl bg-rosé-50 p-4 text-xs leading-relaxed text-muted-foreground">
                 <p className="font-medium text-foreground">Atendimento</p>
                 <p className="mt-1">Barreiras, Bahia — Brasil</p>
-                <p>mariallves432@gmail.com · (77) 99996-71649 · @mariallves432</p>
+                <p>mariallves432@gmail.com · (77) 9996-71649 · @mariallves432</p>
               </div>
             </div>
           </aside>

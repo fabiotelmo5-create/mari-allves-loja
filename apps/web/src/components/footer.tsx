@@ -78,7 +78,7 @@ export function Footer() {
               <li className="flex items-start gap-2">
                 <Phone className="h-4 w-4 mt-0.5 text-rosé-400" />
                 <a href="https://wa.me/5577999671649" target="_blank" rel="noopener noreferrer" className="hover:text-rosé-700 hover:underline">
-                  (77) 99996-71649
+                  (77) 9996-71649
                 </a>
               </li>
               <li className="flex items-start gap-2">
