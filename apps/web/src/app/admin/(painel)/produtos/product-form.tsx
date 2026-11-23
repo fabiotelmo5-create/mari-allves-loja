@@ -44,6 +44,20 @@ type Props = {
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
+function skuFromName(value: string) {
+  const base =
+    value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '')
+      .slice(0, 12)
+      .toUpperCase() || 'PROD';
+  let hash = 0;
+  for (const char of value) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
+  return `MA-${base}-${hash.toString(36).slice(-4).toUpperCase()}`;
+}
+
 const emptyValues: Values = {
   name: '',
   slug: '',
@@ -64,6 +78,9 @@ const emptyValues: Values = {
 };
 
 export function ProductForm({ categories, initialValues = emptyValues, initialVariants, action }: Props) {
+  const isNew = !initialValues.id;
+  const [productName, setProductName] = useState(initialValues.name);
+  const generatedSku = skuFromName(productName);
   const [error, setError] = useState<string | null>(null);
   const [imageError, setImageError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -170,7 +187,8 @@ export function ProductForm({ categories, initialValues = emptyValues, initialVa
               name="name"
               required
               minLength={3}
-              defaultValue={initialValues.name}
+              value={productName}
+              onChange={(event) => setProductName(event.target.value)}
               className="input"
               placeholder="Ex.: Vestido midi em linho"
             />
@@ -437,13 +455,25 @@ export function ProductForm({ categories, initialValues = emptyValues, initialVa
               placeholder="gerado pelo nome"
             />
           </Field>
-          <Field
-            label="Código do produto"
-            help="Código interno para controle. Se não tiver, deixe em branco e geramos um."
-            hint="Ex.: VEST-001"
-          >
-            <input name="sku" defaultValue={initialValues.sku} className="input" placeholder="automático" />
-          </Field>
+          {isNew ? (
+            <Field
+              label="Código do produto"
+              help="Gerado automaticamente a partir do nome. Não precisa preencher."
+            >
+              <input type="hidden" name="sku" value={generatedSku} />
+              <div className="input flex items-center bg-rosé-50/60 font-mono text-xs text-rosé-700">
+                {generatedSku}
+              </div>
+            </Field>
+          ) : (
+            <Field
+              label="Código do produto"
+              help="Código interno para controle. Se não tiver, deixe em branco e geramos um."
+              hint="Ex.: VEST-001"
+            >
+              <input name="sku" defaultValue={initialValues.sku} className="input" placeholder="automático" />
+            </Field>
+          )}
           <Field label="Composição" help="Ex.: 70% viscose, 30% linho. Ajuda a cliente a entender o tecido.">
             <input
               name="composition"
