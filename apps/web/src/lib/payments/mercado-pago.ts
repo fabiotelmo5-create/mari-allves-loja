@@ -215,7 +215,8 @@ export async function createMercadoPagoPreference(
     statement_descriptor: 'MARI ALLVES',
     expires: true,
     expiration_date_from: new Date().toISOString(),
-    expiration_date_to: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
+    // Limite de 10 minutos para o cliente concluir o pagamento.
+    expiration_date_to: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
   };
 
   const response = await mercadoPagoFetch('/checkout/preferences', input.accessToken, {

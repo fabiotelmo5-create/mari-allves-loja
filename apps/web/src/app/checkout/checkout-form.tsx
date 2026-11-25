@@ -430,8 +430,13 @@ export function CheckoutForm({
                 <p className="text-sm font-medium text-rosé-700">Pagamento pelo Mercado Pago</p>
                 <p className="mt-1 text-sm text-muted-foreground">
                   Você será redirecionado para o ambiente seguro do Mercado Pago para concluir o
-                  pagamento com as opções disponíveis na sua conta. O pedido só é confirmado
-                  depois que o Mercado Pago aprovar a transação.
+                  pagamento com as opções disponíveis na sua conta. O link de pagamento expira em
+                  <strong> 10 minutos</strong>. O pedido só é confirmado depois que o Mercado Pago
+                  aprovar a transação.
+                </p>
+                <p className="mt-2 text-xs text-rosé-600">
+                  Após 10 minutos sem pagamento, o pedido pode ser cancelado e os itens voltam ao
+                  estoque.
                 </p>
               </div>
               <p className="mt-4 text-xs text-muted-foreground">
