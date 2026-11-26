@@ -368,6 +368,49 @@ export async function createOrderAction(
         });
       }
 
+      // Se a última peça de um produto publicado foi vendida, arquiva automaticamente.
+      const productIdsToCheck = Array.from(
+        new Set(orderItems.map((item) => item.variant.product.id))
+      );
+
+      for (const productId of productIdsToCheck) {
+        const [product, variants] = await Promise.all([
+          tx.product.findUnique({
+            where: { id: productId },
+            select: { status: true, autoArchivedOutOfStock: true },
+          }),
+          tx.productVariant.findMany({
+            where: { productId, active: true },
+            select: { stock: { select: { quantity: true } } },
+          }),
+        ]);
+
+        if (!product) continue;
+        if (product.status !== 'PUBLICADO' || product.autoArchivedOutOfStock) continue;
+        if (variants.length === 0) continue;
+        if (variants.some((variant) => (variant.stock?.quantity ?? 0) > 0)) continue;
+
+        await tx.product.update({
+          where: { id: productId },
+          data: {
+            status: 'ARQUIVADO',
+            autoArchivedOutOfStock: true,
+            publishedAt: null,
+          },
+        });
+
+        await tx.auditLog.create({
+          data: {
+            tableName: 'Product',
+            recordId: productId,
+            action: 'UPDATE',
+            changedBy: 'system',
+            oldData: { status: 'PUBLICADO' },
+            newData: { status: 'ARQUIVADO', reason: 'estoque_esgotado_por_venda' },
+          },
+        });
+      }
+
       await tx.orderStatusHistory.create({
         data: {
           orderId: created.id,

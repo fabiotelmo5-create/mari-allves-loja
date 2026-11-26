@@ -180,6 +180,7 @@ model Product {
   depthCm            Int?
   status             ProductStatus @default(RASCUNHO)
   blackFriday        Boolean       @default(false) // seleção da Black Friday
+  autoArchivedOutOfStock Boolean    @default(false) // arquivado automaticamente por estoque zerado
   publishedAt        DateTime?
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt

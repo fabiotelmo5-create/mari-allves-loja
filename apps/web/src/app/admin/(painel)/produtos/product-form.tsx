@@ -32,6 +32,7 @@ type Values = {
   imageUrl: string;
   status: 'RASCUNHO' | 'PUBLICADO' | 'INATIVO' | 'ARQUIVADO';
   blackFriday: boolean;
+  autoArchivedOutOfStock?: boolean;
 };
 
 type Props = {
@@ -75,6 +76,7 @@ const emptyValues: Values = {
   imageUrl: '',
   status: 'RASCUNHO',
   blackFriday: false,
+  autoArchivedOutOfStock: false,
 };
 
 export function ProductForm({ categories, initialValues = emptyValues, initialVariants, action }: Props) {
@@ -175,6 +177,13 @@ export function ProductForm({ categories, initialValues = emptyValues, initialVa
       {error && (
         <div role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {error}
+        </div>
+      )}
+
+      {initialValues.autoArchivedOutOfStock && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          Este produto foi arquivado automaticamente porque o estoque esgotou. Adicione saldo em
+          “Tamanhos, cores e estoque” e salve para publicá-lo novamente.
         </div>
       )}
 

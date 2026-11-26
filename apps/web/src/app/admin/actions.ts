@@ -306,7 +306,13 @@ export async function updateProductAction(
 
   const existing = await prisma.product.findUnique({
     where: { id },
-    select: { id: true, status: true, publishedAt: true, sku: true },
+    select: {
+      id: true,
+      status: true,
+      publishedAt: true,
+      sku: true,
+      autoArchivedOutOfStock: true,
+    },
   });
   if (!existing) return { error: 'Produto não encontrado.' };
 
@@ -376,7 +382,23 @@ export async function updateProductAction(
   });
   const finalImageUrl = image.value ?? (removeImage ? undefined : currentImage?.url);
 
-  if (status === 'PUBLICADO' && !finalImageUrl) {
+  // Produto arquivado automaticamente por falta de estoque volta a ficar
+  // publicado quando o admin coloca saldo e salva.
+  const autoArchived = existing.autoArchivedOutOfStock;
+  const hasStock = variants.some((variant) => variant.initialStock > 0);
+  let finalStatus = status;
+  let finalAutoArchived = autoArchived;
+
+  if (autoArchived) {
+    if (status === 'ARQUIVADO' && hasStock) {
+      finalStatus = 'PUBLICADO';
+      finalAutoArchived = false;
+    } else if (status !== 'ARQUIVADO') {
+      finalAutoArchived = false;
+    }
+  }
+
+  if (finalStatus === 'PUBLICADO' && !finalImageUrl) {
     return { error: 'Envie uma foto para publicar o produto.' };
   }
 
@@ -398,9 +420,10 @@ export async function updateProductAction(
           widthCm: widthCm ?? null,
           heightCm: heightCm ?? null,
           depthCm: depthCm ?? null,
-          status,
+          status: finalStatus,
+          autoArchivedOutOfStock: finalAutoArchived,
           blackFriday,
-          publishedAt: status === 'PUBLICADO' ? existing.publishedAt ?? new Date() : null,
+          publishedAt: finalStatus === 'PUBLICADO' ? existing.publishedAt ?? new Date() : null,
         },
       });
 
@@ -542,7 +565,7 @@ export async function archiveProductAction(formData: FormData) {
   await prisma.$transaction(async (tx) => {
     await tx.product.update({
       where: { id },
-      data: { status: 'ARQUIVADO', publishedAt: null },
+      data: { status: 'ARQUIVADO', autoArchivedOutOfStock: false, publishedAt: null },
     });
     await tx.auditLog.create({
       data: {
@@ -550,7 +573,7 @@ export async function archiveProductAction(formData: FormData) {
         recordId: id,
         action: 'UPDATE',
         changedBy: admin.userId,
-        newData: { status: 'ARQUIVADO' },
+        newData: { status: 'ARQUIVADO', reason: 'arquivamento_manual' },
       },
     });
   });

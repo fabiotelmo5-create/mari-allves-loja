@@ -75,6 +75,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
           imageUrl: product.images[0]?.url ?? '',
           status: product.status,
           blackFriday: product.blackFriday,
+          autoArchivedOutOfStock: product.autoArchivedOutOfStock,
         }}
         initialVariants={product.variants.map((variant) => ({
           id: variant.id,
