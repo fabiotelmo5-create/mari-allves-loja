@@ -15,7 +15,13 @@ import {
   paymentMethodLabel,
   paymentProviderLabel,
 } from '@/lib/payment-labels';
-import { OrderStatusForm, ShipmentForm, SyncPaymentForm } from '../order-forms';
+import {
+  CorrectionStatusForm,
+  OrderStatusForm,
+  PaymentStatusForm,
+  ShipmentForm,
+  SyncPaymentForm,
+} from '../order-forms';
 
 export const metadata = { title: 'Detalhe do pedido — Painel Mari Allves' };
 export const dynamic = 'force-dynamic';
@@ -190,6 +196,13 @@ export default async function AdminOrderPage({
                     <p className="mt-1 text-xs text-muted-foreground">
                       {formatPrice(payment.amountCents)} · criado em {formatDate(payment.createdAt)}
                     </p>
+                    {payment.provider === 'manual' && (
+                      <PaymentStatusForm
+                        orderId={order.id}
+                        paymentId={payment.id}
+                        currentStatus={payment.status}
+                      />
+                    )}
                   </div>
                 ))}
                 {order.payments.some((payment) => payment.provider === 'mercado_pago') ? (

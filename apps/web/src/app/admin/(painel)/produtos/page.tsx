@@ -22,10 +22,26 @@ const statusClass = {
   ARQUIVADO: 'bg-rosé-50 text-rosé-700',
 } as const;
 
-export default async function AdminProductsPage() {
+export default async function AdminProductsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
   await requireAdmin();
 
+  const params = await searchParams;
+  const query = (params.q ?? '').trim().slice(0, 100);
+
   const products = await prisma.product.findMany({
+    where: query
+      ? {
+          OR: [
+            { name: { contains: query, mode: 'insensitive' } },
+            { sku: { contains: query, mode: 'insensitive' } },
+            { slug: { contains: query, mode: 'insensitive' } },
+          ],
+        }
+      : undefined,
     include: {
       category: { select: { name: true } },
       images: { take: 1, orderBy: { position: 'asc' } },
@@ -51,18 +67,52 @@ export default async function AdminProductsPage() {
         </Link>
       </div>
 
+      <form method="get" className="flex flex-wrap items-center gap-2">
+        <input
+          name="q"
+          defaultValue={query}
+          placeholder="Buscar por nome, SKU ou endereço..."
+          className="input max-w-md flex-1"
+          aria-label="Buscar produtos"
+        />
+        <button
+          type="submit"
+          className="rounded-lg bg-rosé-700 px-4 py-2 text-sm font-medium text-white hover:bg-rosé-600"
+        >
+          Buscar
+        </button>
+        {query && (
+          <Link
+            href="/admin/produtos"
+            className="rounded-lg px-3 py-2 text-sm font-medium text-rosé-700 hover:bg-rosé-50"
+          >
+            Limpar
+          </Link>
+        )}
+      </form>
+
+      {query && (
+        <p className="text-sm text-muted-foreground">
+          {products.length} produto(s) encontrado(s) para “{query}”.
+        </p>
+      )}
+
       {products.length === 0 ? (
         <div className="rounded-xl border border-dashed border-rosé-200 bg-white px-6 py-14 text-center">
           <Package className="mx-auto h-9 w-9 text-rosé-400" />
-          <h2 className="mt-3 font-medium text-foreground">Nenhum produto cadastrado</h2>
+          <h2 className="mt-3 font-medium text-foreground">
+            {query ? 'Nenhum produto encontrado' : 'Nenhum produto cadastrado'}
+          </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Cadastre o primeiro produto real da Mari Allves.
+            {query
+              ? 'Tente outro nome, SKU ou endereço da página.'
+              : 'Cadastre o primeiro produto real da Mari Allves.'}
           </p>
           <Link
-            href="/admin/produtos/novo"
+            href={query ? '/admin/produtos' : '/admin/produtos/novo'}
             className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-rosé-700 hover:underline"
           >
-            <Plus className="h-4 w-4" /> Cadastrar produto
+            {query ? 'Limpar busca' : 'Cadastrar produto'}
           </Link>
         </div>
       ) : (

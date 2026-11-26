@@ -2,11 +2,14 @@
 
 import { useActionState } from 'react';
 import { Button } from '@/components/button';
-import { ORDER_STATUS_LABELS, type OrderStatusValue } from '@/lib/order-status';
+import { ALL_ORDER_STATUSES, ORDER_STATUS_LABELS, type OrderStatusValue } from '@/lib/order-status';
+import { PAYMENT_STATUS_LABELS } from '@/lib/payment-labels';
 import {
+  correctOrderStatusAction,
   saveShipmentAction,
   syncMercadoPagoPaymentAction,
   updateOrderStatusAction,
+  updatePaymentStatusAction,
   type OrderActionState,
   type SyncPaymentState,
 } from '@/app/admin/orders-actions';
@@ -70,6 +73,82 @@ export function OrderStatusForm({
       <Feedback state={state} />
       <Button type="submit" disabled={pending}>
         {pending ? 'Salvando…' : 'Atualizar status'}
+      </Button>
+    </form>
+  );
+}
+
+export function CorrectionStatusForm({ orderId }: { orderId: string }) {
+  const [state, formAction, pending] = useActionState(correctOrderStatusAction, null);
+
+  return (
+    <form action={formAction} className="space-y-3">
+      <input type="hidden" name="orderId" value={orderId} />
+      <p className="rounded-lg bg-amber-50 p-2 text-xs text-amber-800">
+        Use apenas para corrigir erros. Esta ação permite qualquer status, inclusive voltar de
+        status finais, e fica registrada no histórico.
+      </p>
+      <label className="block text-sm">
+        Novo status
+        <select name="status" required defaultValue="" className="input">
+          <option value="" disabled>
+            Selecione o status
+          </option>
+          {ALL_ORDER_STATUSES.map((status) => (
+            <option key={status} value={status}>
+              {ORDER_STATUS_LABELS[status]}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="block text-sm">
+        Motivo da correção <span className="text-rosé-600">*</span>
+        <textarea
+          name="note"
+          required
+          minLength={3}
+          rows={2}
+          maxLength={500}
+          placeholder="Ex.: Cliente não pagou; status marcado por engano."
+          className="input"
+        />
+      </label>
+      <Feedback state={state} />
+      <Button type="submit" variant="outline" disabled={pending}>
+        {pending ? 'Corrigindo…' : 'Corrigir status'}
+      </Button>
+    </form>
+  );
+}
+
+export function PaymentStatusForm({
+  orderId,
+  paymentId,
+  currentStatus,
+}: {
+  orderId: string;
+  paymentId: string;
+  currentStatus: string;
+}) {
+  const [state, formAction, pending] = useActionState(updatePaymentStatusAction, null);
+
+  return (
+    <form action={formAction} className="mt-3 border-t border-border pt-3">
+      <input type="hidden" name="orderId" value={orderId} />
+      <input type="hidden" name="paymentId" value={paymentId} />
+      <label className="block text-sm">
+        Status do pagamento (manual)
+        <select name="status" required defaultValue={currentStatus} className="input">
+          {Object.entries(PAYMENT_STATUS_LABELS).map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
+      </label>
+      <Feedback state={state} />
+      <Button type="submit" variant="outline" disabled={pending} className="mt-3">
+        {pending ? 'Salvando…' : 'Salvar status do pagamento'}
       </Button>
     </form>
   );

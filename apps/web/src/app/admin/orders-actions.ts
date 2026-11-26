@@ -4,16 +4,33 @@ import { revalidatePath } from 'next/cache';
 import { prisma } from '@mari-allves/db';
 import { requireAdmin } from '@/lib/auth';
 import {
+  ALL_ORDER_STATUSES,
   canTransition,
   isOrderStatus,
   ORDER_STATUS_LABELS,
 } from '@/lib/order-status';
+import { PAYMENT_STATUS_LABELS } from '@/lib/payment-labels';
 import { applyMercadoPagoPayment } from '@/lib/payments/apply';
 import { getPaymentConfig } from '@/lib/payments/config';
 import { searchMercadoPagoPayments } from '@/lib/payments/mercado-pago';
 
 export type OrderActionState = { error?: string; success?: boolean } | null;
 export type SyncPaymentState = { error?: string; success?: string } | null;
+
+const PAYMENT_STATUSES = [
+  'PENDENTE',
+  'APROVADO',
+  'RECUSADO',
+  'EXPIRADO',
+  'CANCELADO',
+  'REEMBOLSADO',
+] as const;
+
+type PaymentStatusValue = (typeof PAYMENT_STATUSES)[number];
+
+function isPaymentStatus(value: string): value is PaymentStatusValue {
+  return (PAYMENT_STATUSES as readonly string[]).includes(value);
+}
 
 function revalidateOrder(orderId: string, code: string) {
   revalidatePath('/admin/pedidos');
@@ -309,4 +326,215 @@ export async function syncMercadoPagoPaymentAction(
       error: 'Não foi possível consultar o Mercado Pago agora. Tente novamente em instantes.',
     };
   }
+}
+
+/**
+ * Correção manual: permite qualquer transição de status, inclusive voltar de
+ * status finais. Exige observação e registra tudo no histórico/auditoria.
+ */
+export async function correctOrderStatusAction(
+  _previousState: OrderActionState,
+  formData: FormData
+): Promise<OrderActionState> {
+  const { admin } = await requireAdmin();
+
+  const orderId = String(formData.get('orderId') ?? '').trim();
+  const nextStatus = String(formData.get('status') ?? '').trim();
+  const note = String(formData.get('note') ?? '').trim().slice(0, 500);
+
+  if (!orderId) return { error: 'Pedido não encontrado.' };
+  if (!isOrderStatus(nextStatus)) return { error: 'Status inválido.' };
+  if (note.length < 3) {
+    return { error: 'Descreva o motivo da correção (mínimo 3 caracteres).' };
+  }
+
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    include: {
+      items: true,
+      shipment: true,
+      payments: { select: { id: true, provider: true, status: true } },
+      statusHistory: { select: { toStatus: true } },
+    },
+  });
+
+  if (!order) return { error: 'Pedido não encontrado.' };
+  if (order.status === nextStatus) return { error: 'O pedido já está nesse status.' };
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.order.update({
+        where: { id: orderId },
+        data: { status: nextStatus, adminUserId: admin.id },
+      });
+
+      await tx.orderStatusHistory.create({
+        data: {
+          orderId,
+          fromStatus: order.status,
+          toStatus: nextStatus,
+          note: `CORREÇÃO MANUAL: ${note}`,
+          changedBy: admin.userId,
+        },
+      });
+
+      if (nextStatus === 'PAGAMENTO_CONFIRMADO') {
+        await tx.payment.updateMany({
+          where: { orderId, status: 'PENDENTE' },
+          data: { status: 'APROVADO' },
+        });
+      }
+
+      if (nextStatus === 'AGUARDANDO_PAGAMENTO') {
+        await tx.payment.updateMany({
+          where: { orderId, status: { in: ['APROVADO', 'CANCELADO', 'REEMBOLSADO'] } },
+          data: { status: 'PENDENTE' },
+        });
+      }
+
+      if (nextStatus === 'CANCELADO') {
+        const alreadyReturned = order.statusHistory.some(
+          (entry) => entry.toStatus === 'CANCELADO'
+        );
+        if (!alreadyReturned) {
+          for (const item of order.items) {
+            if (!item.variantId) continue;
+            const stock = await tx.stock.findUnique({ where: { variantId: item.variantId } });
+            if (!stock) continue;
+            await tx.stock.update({
+              where: { id: stock.id },
+              data: { quantity: { increment: item.quantity } },
+            });
+            await tx.stockMovement.create({
+              data: {
+                stockId: stock.id,
+                type: 'DEVOLUCAO',
+                quantity: item.quantity,
+                reason: `Correção manual para cancelado: pedido ${order.code}`,
+                changedBy: admin.userId,
+                adminUserId: admin.id,
+              },
+            });
+          }
+        }
+        await tx.payment.updateMany({
+          where: { orderId },
+          data: { status: 'CANCELADO' },
+        });
+      }
+
+      if (nextStatus === 'REEMBOLSADO') {
+        await tx.payment.updateMany({
+          where: { orderId },
+          data: { status: 'REEMBOLSADO' },
+        });
+      }
+
+      if (nextStatus === 'ENVIADO') {
+        await tx.shipment.upsert({
+          where: { orderId },
+          create: { orderId, shippedAt: new Date() },
+          update: { shippedAt: order.shipment?.shippedAt ?? new Date() },
+        });
+      }
+
+      if (nextStatus === 'ENTREGUE') {
+        await tx.shipment.upsert({
+          where: { orderId },
+          create: { orderId, deliveredAt: new Date() },
+          update: { deliveredAt: order.shipment?.deliveredAt ?? new Date() },
+        });
+      }
+
+      if (order.status === 'ENTREGUE' && nextStatus !== 'ENTREGUE') {
+        await tx.shipment.updateMany({
+          where: { orderId },
+          data: { deliveredAt: null },
+        });
+      }
+
+      await tx.auditLog.create({
+        data: {
+          tableName: 'Order',
+          recordId: orderId,
+          action: 'UPDATE',
+          changedBy: admin.userId,
+          oldData: { status: order.status },
+          newData: { status: nextStatus, note, reason: 'correcao_manual' },
+        },
+      });
+    });
+  } catch (error) {
+    console.error('correctOrderStatusAction failed', error);
+    return { error: 'Não foi possível corrigir o status. Tente novamente.' };
+  }
+
+  revalidateOrder(orderId, order.code);
+  return { success: true };
+}
+
+/** Altera o status do pagamento apenas de pedidos com pagamento manual. */
+export async function updatePaymentStatusAction(
+  _previousState: OrderActionState,
+  formData: FormData
+): Promise<OrderActionState> {
+  const { admin } = await requireAdmin();
+
+  const orderId = String(formData.get('orderId') ?? '').trim();
+  const paymentId = String(formData.get('paymentId') ?? '').trim();
+  const nextStatus = String(formData.get('status') ?? '').trim();
+
+  if (!orderId || !paymentId) return { error: 'Pagamento não encontrado.' };
+  if (!isPaymentStatus(nextStatus)) return { error: 'Status de pagamento inválido.' };
+
+  const payment = await prisma.payment.findUnique({
+    where: { id: paymentId },
+    include: { order: { select: { id: true, code: true, status: true } } },
+  });
+
+  if (!payment || payment.orderId !== orderId) {
+    return { error: 'Pagamento não encontrado neste pedido.' };
+  }
+  if (payment.provider !== 'manual') {
+    return {
+      error: 'Pagamentos online só podem ser alterados pelo Mercado Pago. Use “Sincronizar”.',
+    };
+  }
+  if (payment.status === nextStatus) return { error: 'O pagamento já está nesse status.' };
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.payment.update({
+        where: { id: paymentId },
+        data: { status: nextStatus },
+      });
+
+      await tx.auditLog.create({
+        data: {
+          tableName: 'Payment',
+          recordId: paymentId,
+          action: 'UPDATE',
+          changedBy: admin.userId,
+          oldData: { status: payment.status },
+          newData: { status: nextStatus, reason: 'ajuste_manual_pagamento' },
+        },
+      });
+
+      await tx.orderStatusHistory.create({
+        data: {
+          orderId,
+          fromStatus: payment.order.status,
+          toStatus: payment.order.status,
+          note: `Status do pagamento alterado manualmente para ${PAYMENT_STATUS_LABELS[nextStatus]}.`,
+          changedBy: admin.userId,
+        },
+      });
+    });
+  } catch (error) {
+    console.error('updatePaymentStatusAction failed', error);
+    return { error: 'Não foi possível alterar o status do pagamento.' };
+  }
+
+  revalidateOrder(orderId, payment.order.code);
+  return { success: true };
 }
